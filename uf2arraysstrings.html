@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz UF2 - Métodos Arrays y Strings</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #0b1020; color: #e8ecff; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .card { background: #121a33; border: 1px solid #22305e; border-radius: 14px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .topbar { display:flex; gap: 12px; align-items:center; justify-content:space-between; margin-bottom: 12px; }
+    .pill { display:inline-flex; gap:8px; align-items:center; background:#0f1630; border:1px solid #22305e; padding:6px 10px; border-radius:999px; font-size: 14px; color:#cfd7ff; }
+    .title { font-size: 18px; margin: 8px 0 4px; }
+    .subtitle { margin:0 0 12px; color:#b9c3ff; font-size:14px; line-height:1.4; }
+    pre { margin: 12px 0; padding: 12px; background:#0f1630; border:1px solid #22305e; border-radius: 12px; overflow:auto; color:#dfe6ff; }
+    .options { display:grid; gap: 10px; margin-top: 8px; }
+    label.opt {
+      display:flex; gap:10px; align-items:flex-start;
+      padding: 12px; border-radius: 12px;
+      border: 1px solid #22305e; background:#0f1630;
+      cursor:pointer;
+    }
+    label.opt:hover { border-color:#3a52a8; }
+    input[type="radio"] { margin-top: 3px; transform: scale(1.1); }
+    .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px; }
+    button {
+      border: 1px solid #2b3a74;
+      background: #1a2550;
+      color: #e8ecff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    button:hover { background:#22306a; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .feedback { margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px solid; }
+    .ok { background: rgba(36, 173, 92, .12); border-color: rgba(36, 173, 92, .55); }
+    .bad { background: rgba(220, 61, 61, .12); border-color: rgba(220, 61, 61, .55); }
+    .feedback h3 { margin:0 0 6px; font-size: 16px; }
+    .feedback p { margin:0; color:#dfe6ff; line-height:1.45; }
+    .muted { color:#b9c3ff; font-size: 13px; }
+    .hr { height:1px; background:#22305e; margin: 16px 0; }
+    .summary { display:none; }
+    .summary ul { margin: 8px 0 0; padding-left: 18px; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; background:#0f1630; border:1px solid #22305e; padding:2px 6px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="pill">📘 UF2 • Arrays + Strings</div>
+      <div class="pill"><span>Progreso:</span> <strong id="progress">1/20</strong></div>
+      <div class="pill"><span>Puntos:</span> <strong id="score">0</strong></div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <div class="title" id="qTitle">Pregunta</div>
+      <p class="subtitle" id="qText"></p>
+      <pre id="qCode" style="display:none;"></pre>
+
+      <div class="options" id="options"></div>
+
+      <div class="btns">
+        <button id="btnCheck">Comprobar</button>
+        <button id="btnNext" disabled>Siguiente</button>
+        <button id="btnRestart" style="margin-left:auto;">Reiniciar</button>
+      </div>
+
+      <div id="feedback" style="display:none;"></div>
+
+      <div class="hr"></div>
+      <p class="muted">
+        Tip: <span class="kbd">length</span> es propiedad (sin paréntesis). Métodos como <span class="kbd">toUpperCase()</span> llevan paréntesis.
+      </p>
+    </div>
+
+    <div class="card summary" id="summaryCard" style="margin-top:14px;">
+      <div class="title">Resultado final</div>
+      <p class="subtitle" id="summaryText"></p>
+      <div class="hr"></div>
+      <div id="review"></div>
+      <div class="btns">
+        <button id="btnRestart2">Reiniciar quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 20 preguntas típicas de examen UF2 (arrays + strings)
+    // Formato:
+    // { title, text, code?, options[4], answer (0-3), explain }
+    const questions = [
+      {
+        title: "1) push() devuelve…",
+        text: "¿Qué devuelve push() al añadir un elemento?",
+        code:
+`let a = [1,2];
+let r = a.push(3);`,
+        options: [
+          "El elemento añadido (3)",
+          "La nueva longitud del array",
+          "Un array nuevo",
+          "undefined"
+        ],
+        answer: 1,
+        explain: "push() MODIFICA el array y devuelve la nueva longitud. Aquí a pasa a [1,2,3] y r vale 3."
+      },
+      {
+        title: "2) pop() devuelve…",
+        text: "¿Qué devuelve pop()?",
+        code:
+`let a = [1,2,3];
+let x = a.pop();`,
+        options: [
+          "La nueva longitud del array",
+          "Un array con el último elemento",
+          "El elemento eliminado",
+          "true/false"
+        ],
+        answer: 2,
+        explain: "pop() MODIFICA el array y devuelve el elemento eliminado. Aquí x=3 y a queda [1,2]."
+      },
+      {
+        title: "3) shift() hace…",
+        text: "¿Qué hace shift() en un array?",
+        code:
+`let a = [10,20,30];
+a.shift();`,
+        options: [
+          "Elimina el último elemento",
+          "Elimina el primer elemento",
+          "Añade un elemento al final",
+          "Copia parte del array"
+        ],
+        answer: 1,
+        explain: "shift() elimina el primer elemento y modifica el array. En el ejemplo elimina 10."
+      },
+      {
+        title: "4) unshift() devuelve…",
+        text: "¿Qué devuelve unshift()?",
+        code:
+`let a = [2,3];
+let r = a.unshift(1);`,
+        options: [
+          "El elemento añadido (1)",
+          "La nueva longitud del array",
+          "Un array nuevo",
+          "undefined"
+        ],
+        answer: 1,
+        explain: "unshift() añade al principio, MODIFICA el array y devuelve la nueva longitud. Aquí a=[1,2,3] y r=3."
+      },
+      {
+        title: "5) slice()…",
+        text: "¿Qué devuelve slice(1,3) y qué pasa con el array original?",
+        code:
+`let a = [1,2,3,4];
+let b = a.slice(1,3);`,
+        options: [
+          "b=[2,3] y a se modifica",
+          "b=[2,3] y a NO se modifica",
+          "b=[1,2,3] y a NO se modifica",
+          "b=[2,3,4] y a se modifica"
+        ],
+        answer: 1,
+        explain: "slice() NO modifica el original. (1,3) toma índices 1 y 2: b=[2,3]."
+      },
+      {
+        title: "6) splice()…",
+        text: "¿Qué ocurre con splice(1,1)?",
+        code:
+`let a = [1,2,3];
+let quitado = a.splice(1,1);`,
+        options: [
+          "a=[1,3] y quitado=[2]",
+          "a=[1,2,3] y quitado=[2]",
+          "a=[2,3] y quitado=1",
+          "a=[1,2] y quitado=3"
+        ],
+        answer: 0,
+        explain: "splice() MODIFICA el array. Elimina 1 elemento desde índice 1: quita el 2. Devuelve un array con lo quitado: [2]."
+      },
+      {
+        title: "7) forEach() devuelve…",
+        text: "¿Qué valor se guarda en r?",
+        code:
+`let a = [1,2,3];
+let r = a.forEach(n => n * 2);`,
+        options: [
+          "r = [2,4,6]",
+          "r = 6",
+          "r = undefined",
+          "Da error siempre"
+        ],
+        answer: 2,
+        explain: "forEach() recorre pero NO devuelve un array. Devuelve undefined. Si quieres transformar usa map()."
+      },
+      {
+        title: "8) map()…",
+        text: "¿Qué devuelve map()?",
+        code:
+`let a = [1,2,3];
+let b = a.map(n => n * 2);`,
+        options: [
+          "b = [2,4,6] y a NO se modifica",
+          "b = [2,4,6] y a se modifica",
+          "b = 6",
+          "b = undefined"
+        ],
+        answer: 0,
+        explain: "map() devuelve un array NUEVO con el resultado de transformar cada elemento. El original no se modifica."
+      },
+      {
+        title: "9) filter()…",
+        text: "¿Qué resultado produce filter(n => n < 3)?",
+        code:
+`let a = [1,2,3,4];
+let b = a.filter(n => n < 3);`,
+        options: [
+          "b = [1,2,3]",
+          "b = [1,2]",
+          "b = [3,4]",
+          "b = 2"
+        ],
+        answer: 1,
+        explain: "filter() devuelve un array nuevo con los elementos que cumplen la condición: 1 y 2."
+      },
+      {
+        title: "10) find()…",
+        text: "¿Qué devuelve find(n => n % 2 === 0)?",
+        code:
+`let a = [3,7,8,10];
+let r = a.find(n => n % 2 === 0);`,
+        options: [
+          "r = [8,10]",
+          "r = 8",
+          "r = true",
+          "r = 10"
+        ],
+        answer: 1,
+        explain: "find() devuelve el PRIMER elemento que cumple la condición. El primer par es 8."
+      },
+      {
+        title: "11) reduce()…",
+        text: "¿Qué devuelve este reduce?",
+        code:
+`let a = [1,2,3];
+let r = a.reduce((acc,n) => acc + n, 10);`,
+        options: [
+          "r = 6",
+          "r = 16",
+          "r = 10",
+          "r = [1,2,3,10]"
+        ],
+        answer: 1,
+        explain: "Empieza con acc=10 (valor inicial). Suma 1,2,3: 10+1+2+3 = 16."
+      },
+      {
+        title: "12) indexOf() en arrays",
+        text: "¿Qué devuelve indexOf si no encuentra el elemento?",
+        code:
+`let a = ["a","b","c"];
+a.indexOf("z");`,
+        options: [
+          "undefined",
+          "false",
+          "-1",
+          "0"
+        ],
+        answer: 2,
+        explain: "indexOf devuelve la posición o -1 si no existe."
+      },
+      {
+        title: "13) includes() en arrays",
+        text: "¿Qué devuelve includes()?",
+        code:
+`let a = ["a","b","c"];
+a.includes("b");`,
+        options: [
+          "1",
+          "true",
+          "\"b\"",
+          "-1"
+        ],
+        answer: 1,
+        explain: "includes() devuelve boolean: true/false."
+      },
+      {
+        title: "14) split()",
+        text: "¿Qué devuelve split(\",\")?",
+        code:
+`let t = "ana,luis,pedro";
+let r = t.split(",");`,
+        options: [
+          "r = \"ana\"",
+          "r = [\"ana,luis,pedro\"]",
+          "r = [\"ana\",\"luis\",\"pedro\"]",
+          "r = 3"
+        ],
+        answer: 2,
+        explain: "split(\",\") separa por comas y devuelve un array con cada parte."
+      },
+      {
+        title: "15) trim()",
+        text: "¿Qué devuelve trim()?",
+        code:
+`"  hola  ".trim();`,
+        options: [
+          "\"hola\"",
+          "\"  hola  \"",
+          "\"hola  \"",
+          "\"  hola\""
+        ],
+        answer: 0,
+        explain: "trim() elimina espacios SOLO al inicio y al final."
+      },
+      {
+        title: "16) toUpperCase()",
+        text: "¿Qué devuelve toUpperCase()?",
+        code:
+`"HoLa".toUpperCase();`,
+        options: [
+          "\"hola\"",
+          "\"HOLA\"",
+          "\"HoLa\"",
+          "undefined"
+        ],
+        answer: 1,
+        explain: "toUpperCase() devuelve un string en mayúsculas (no modifica el original)."
+      },
+      {
+        title: "17) startsWith()",
+        text: "¿Qué devuelve startsWith(\"Ho\")?",
+        code:
+`"Hola mundo".startsWith("Ho");`,
+        options: [
+          "true",
+          "false",
+          "2",
+          "\"Ho\""
+        ],
+        answer: 0,
+        explain: "startsWith comprueba el inicio del string y devuelve boolean."
+      },
+      {
+        title: "18) endsWith()",
+        text: "¿Qué devuelve endsWith(\"mundo\")?",
+        code:
+`"Hola mundo".endsWith("mundo");`,
+        options: [
+          "false",
+          "true",
+          "\"mundo\"",
+          "9"
+        ],
+        answer: 1,
+        explain: "endsWith comprueba el final del string y devuelve boolean."
+      },
+      {
+        title: "19) replace()",
+        text: "¿Qué devuelve replace(\"mundo\",\"Juan\")?",
+        code:
+`"Hola mundo".replace("mundo","Juan");`,
+        options: [
+          "\"Hola Juan\"",
+          "\"Hola mundo\"",
+          "\"Juan\"",
+          "undefined"
+        ],
+        answer: 0,
+        explain: "replace devuelve un string nuevo con el cambio (no modifica el original)."
+      },
+      {
+        title: "20) map + método de string",
+        text: "¿Qué devuelve este código?",
+        code:
+`let palabras = ["sol","casa"];
+let r = palabras.map(p => p.length);`,
+        options: [
+          "[\"sol\",\"casa\"]",
+          "[3,4]",
+          "[\"3\",\"4\"]",
+          "undefined"
+        ],
+        answer: 1,
+        explain: "map transforma cada string en su longitud (number): 'sol'→3 y 'casa'→4."
+      }
+    ];
+
+    // --- Estado ---
+    let idx = 0;
+    let score = 0;
+    let locked = false;
+    const wrongLog = []; // {i, chosen}
+
+    // --- Elementos ---
+    const progressEl = document.getElementById("progress");
+    const scoreEl = document.getElementById("score");
+    const qTitleEl = document.getElementById("qTitle");
+    const qTextEl = document.getElementById("qText");
+    const qCodeEl = document.getElementById("qCode");
+    const optionsEl = document.getElementById("options");
+    const feedbackEl = document.getElementById("feedback");
+    const btnCheck = document.getElementById("btnCheck");
+    const btnNext = document.getElementById("btnNext");
+    const btnRestart = document.getElementById("btnRestart");
+    const summaryCard = document.getElementById("summaryCard");
+    const quizCard = document.getElementById("quizCard");
+    const summaryText = document.getElementById("summaryText");
+    const reviewEl = document.getElementById("review");
+    const btnRestart2 = document.getElementById("btnRestart2");
+
+    function escapeHTML(s) {
+      return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    }
+
+    function renderQuestion() {
+      locked = false;
+      feedbackEl.style.display = "none";
+      feedbackEl.className = "";
+      feedbackEl.innerHTML = "";
+
+      const q = questions[idx];
+      qTitleEl.textContent = q.title;
+      qTextEl.textContent = q.text;
+
+      progressEl.textContent = `${idx + 1}/${questions.length}`;
+      scoreEl.textContent = String(score);
+
+      if (q.code) {
+        qCodeEl.style.display = "block";
+        qCodeEl.innerHTML = escapeHTML(q.code);
+      } else {
+        qCodeEl.style.display = "none";
+        qCodeEl.innerHTML = "";
+      }
+
+      optionsEl.innerHTML = "";
+      q.options.forEach((opt, i) => {
+        const id = `opt-${idx}-${i}`;
+        const label = document.createElement("label");
+        label.className = "opt";
+        label.setAttribute("for", id);
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "opt";
+        radio.id = id;
+        radio.value = String(i);
+
+        const span = document.createElement("span");
+        span.textContent = opt;
+
+        label.appendChild(radio);
+        label.appendChild(span);
+        optionsEl.appendChild(label);
+      });
+
+      btnNext.disabled = true;
+    }
+
+    function getChosenIndex() {
+      const checked = document.querySelector('input[name="opt"]:checked');
+      return checked ? Number(checked.value) : null;
+    }
+
+    function showFeedback(isCorrect, chosen) {
+      const q = questions[idx];
+      feedbackEl.style.display = "block";
+      feedbackEl.className = `feedback ${isCorrect ? "ok" : "bad"}`;
+
+      const chosenText = chosen === null ? "(sin respuesta)" : q.options[chosen];
+      const correctText = q.options[q.answer];
+
+      feedbackEl.innerHTML = `
+        <h3>${isCorrect ? "✅ Correcto" : "❌ Incorrecto"}</h3>
+        <p><strong>Tu respuesta:</strong> ${escapeHTML(String(chosenText))}</p>
+        <p><strong>Correcta:</strong> ${escapeHTML(String(correctText))}</p>
+        <p class="muted" style="margin-top:8px;"><strong>Explicación:</strong> ${escapeHTML(q.explain)}</p>
+      `;
+    }
+
+    btnCheck.addEventListener("click", () => {
+      if (locked) return;
+
+      const chosen = getChosenIndex();
+      if (chosen === null) {
+        showFeedback(false, null);
+        return;
+      }
+
+      locked = true;
+      const q = questions[idx];
+      const ok = chosen === q.answer;
+
+      if (ok) {
+        score += 1;
+      } else {
+        wrongLog.push({ i: idx, chosen });
+      }
+
+      scoreEl.textContent = String(score);
+      showFeedback(ok, chosen);
+      btnNext.disabled = false;
+    });
+
+    btnNext.addEventListener("click", () => {
+      if (idx < questions.length - 1) {
+        idx += 1;
+        renderQuestion();
+      } else {
+        finish();
+      }
+    });
+
+    function finish() {
+      quizCard.style.display = "none";
+      summaryCard.style.display = "block";
+
+      summaryText.textContent = `Has acertado ${score} de ${questions.length}.`;
+
+      if (wrongLog.length === 0) {
+        reviewEl.innerHTML = `<p class="subtitle">Perfecto: no has fallado ninguna 🎉</p>`;
+        return;
+      }
+
+      const ul = document.createElement("ul");
+      wrongLog.forEach(item => {
+        const q = questions[item.i];
+        const li = document.createElement("li");
+        li.style.marginBottom = "10px";
+        li.innerHTML = `
+          <div><strong>${escapeHTML(q.title)}</strong></div>
+          <div class="muted">Tu respuesta: ${escapeHTML(q.options[item.chosen])}</div>
+          <div class="muted">Correcta: ${escapeHTML(q.options[q.answer])}</div>
+          <div class="muted">Explicación: ${escapeHTML(q.explain)}</div>
+        `;
+        ul.appendChild(li);
+      });
+
+      reviewEl.innerHTML = `<p class="subtitle">Repaso de fallos (con explicación):</p>`;
+      reviewEl.appendChild(ul);
+    }
+
+    function restart() {
+      idx = 0;
+      score = 0;
+      locked = false;
+      wrongLog.length = 0;
+      quizCard.style.display = "block";
+      summaryCard.style.display = "none";
+      renderQuestion();
+    }
+
+    btnRestart.addEventListener("click", restart);
+    btnRestart2.addEventListener("click", restart);
+
+    // iniciar
+    renderQuestion();
+  </script>
+</body>
+</html>
