@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UF2 JavaScript - Cuestionario (40 preguntas)</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color: #111; }
+    header { background: white; border-bottom: 1px solid #e6e8ef; padding: 18px 16px; position: sticky; top: 0; z-index: 10; }
+    header h1 { margin: 0 0 6px 0; font-size: 18px; }
+    header p { margin: 0; color: #444; font-size: 13px; }
+    main { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .card { background: white; border: 1px solid #e6e8ef; border-radius: 12px; padding: 14px 14px; margin: 12px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .q-title { margin: 0 0 10px 0; font-size: 15px; line-height: 1.35; }
+    .meta { color: #666; font-size: 12px; margin-bottom: 10px; }
+    .opts { display: grid; gap: 8px; }
+    label.opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid #e6e8ef; border-radius: 10px; cursor: pointer; background: #fff; }
+    label.opt:hover { background: #fafbff; }
+    input[type="radio"] { margin-top: 3px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0; }
+    button { border: 0; border-radius: 10px; padding: 10px 12px; cursor: pointer; font-weight: 600; }
+    button.primary { background: #2b59ff; color: white; }
+    button.secondary { background: #eef2ff; color: #1a2b77; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .result { font-size: 14px; }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef2ff; color: #1a2b77; font-weight: 700; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px dashed #d0d6ee; background: #fbfcff; font-size: 13px; color: #333; display: none; }
+    .ok { border-color: #bfe8cf; background: #f2fff6; }
+    .bad { border-color: #f3c1c1; background: #fff5f5; }
+    .footer { color: #666; font-size: 12px; padding: 10px 0 22px; }
+    .small { font-size: 12px; color: #666; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .progress { font-size: 12px; color: #444; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <div>
+        <h1>UF2 JavaScript — Cuestionario (40 preguntas)</h1>
+        <p>Tipo test + corrección automática. Marca una opción por pregunta y pulsa “Corregir”.</p>
+      </div>
+      <div class="progress"><span class="pill" id="answeredPill">0/40 respondidas</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="actions">
+        <button class="primary" id="btnGrade">Corregir</button>
+        <button class="secondary" id="btnReset">Reiniciar</button>
+        <span class="result" id="result"></span>
+      </div>
+      <div class="small">
+        Consejo: cuando corrijas, se mostrará explicación breve en cada pregunta.
+      </div>
+    </div>
+
+    <section id="quiz"></section>
+
+    <div class="footer">
+      Basado en los contenidos clave de UF2 (JavaScript moderno, funciones, objetos/prototipos, módulos, programación funcional, modo estricto y errores).
+    </div>
+  </main>
+
+<script>
+  // 40 preguntas (3-4 opciones). correct = índice (0..n-1)
+  const questions = [
+    // Fundamentos: variables / scope / tipos / operadores
+    {
+      q: '1) ¿Cuál es la forma recomendada en JavaScript moderno para declarar variables con ámbito de bloque?',
+      options: ['var', 'let', 'function'],
+      correct: 1,
+      exp: 'let define variables a nivel de bloque. var es de ámbito de función.'
+    },
+    {
+      q: '2) ¿Qué ocurre si asignas a una variable NO declarada (sin let/const/var) en modo NO estricto?',
+      options: ['Se crea automáticamente una variable global', 'Da siempre error de sintaxis', 'Se convierte en null'],
+      correct: 0,
+      exp: 'En modo normal puede crearse una global accidental; en modo estricto esto da error.'
+    },
+    {
+      q: '3) En modo estricto ("use strict"), asignar a una variable no declarada…',
+      options: ['crea una global igual', 'lanza ReferenceError', 'convierte el valor a undefined'],
+      correct: 1,
+      exp: 'El modo estricto evita variables globales accidentales lanzando un error.'
+    },
+    {
+      q: '4) ¿Qué operador puede comportarse como suma o concatenación dependiendo de los tipos?',
+      options: ['*', '+', '/'],
+      correct: 1,
+      exp: 'El + concatena si uno de los operandos es string; los demás suelen convertir a número.'
+    },
+    {
+      q: '5) ¿Qué resultado da "1" + 2?',
+      options: ['3', '"12"', 'NaN'],
+      correct: 1,
+      exp: 'Si uno es string, + concatena: "1" + 2 => "12".'
+    },
+    {
+      q: '6) ¿Qué resultado da "5" * 4?',
+      options: ['20', '"54"', 'Error de sintaxis'],
+      correct: 0,
+      exp: '* convierte a número si puede: Number("5") * 4 => 20.'
+    },
+    {
+      q: '7) ¿Qué devuelve prompt() si el usuario pulsa Cancelar?',
+      options: ['undefined', 'null', '"" (cadena vacía)'],
+      correct: 1,
+      exp: 'prompt devuelve string si escribe algo y null si cancela.'
+    },
+    {
+      q: '8) ¿Qué operador de igualdad COMPRUEBA el tipo (sin coerción)?',
+      options: ['==', '===', '='],
+      correct: 1,
+      exp: '=== compara valor y tipo (igualdad estricta).'
+    },
+    {
+      q: '9) ¿Cuál es el resultado de (0 == false)?',
+      options: ['true', 'false', 'Error'],
+      correct: 0,
+      exp: 'Con == hay conversión de tipos: 0 se considera falso.'
+    },
+    {
+      q: '10) ¿Cuál es el resultado de (0 === false)?',
+      options: ['true', 'false', 'NaN'],
+      correct: 1,
+      exp: '=== exige mismo tipo: number vs boolean => false.'
+    },
+    {
+      q: '11) Conversión a boolean: ¿cuál de estos valores es falsy?',
+      options: ['"0"', '[]', '""'],
+      correct: 2,
+      exp: '"" es falsy. "0" es truthy y [] es truthy.'
+    },
+    {
+      q: '12) ¿Qué bucle se usa para iterar los ELEMENTOS de un array de forma recomendada?',
+      options: ['for in', 'for of', 'foreach (palabra reservada)'],
+      correct: 1,
+      exp: 'for...of itera elementos. for...in itera propiedades (no recomendable para arrays).'
+    },
+
+    // Funciones: valor, anónimas, flecha, rest/spread, closures
+    {
+      q: '13) En JS, las funciones pueden almacenarse en variables porque…',
+      options: ['son tipos primitivos', 'son objetos/valores', 'solo existen en el navegador'],
+      correct: 1,
+      exp: 'Las funciones son objetos y pueden tratarse como valores (pasarlas/guardarlas).'
+    },
+    {
+      q: '14) ¿Qué es un callback?',
+      options: ['Una función que se ejecuta inmediatamente siempre', 'Una función pasada como argumento para ejecutarse luego', 'Un tipo de bucle especial'],
+      correct: 1,
+      exp: 'Callback = función que otra función invoca cuando toca (eventos, async, etc.).'
+    },
+    {
+      q: '15) ¿Qué característica es cierta sobre las funciones flecha (=>)?',
+      options: ['Tienen su propio this y sirven como constructores con new', 'Son anónimas y no admiten call/apply/bind', 'Siempre tienen nombre propio'],
+      correct: 1,
+      exp: 'Las flecha no tienen this propio, no usan new, y no admiten call/apply/bind.'
+    },
+    {
+      q: '16) Si una función tiene un solo parámetro en una función flecha, ¿qué se puede omitir?',
+      options: ['El parámetro', 'Los paréntesis del parámetro', 'La flecha =>'],
+      correct: 1,
+      exp: 'Con un parámetro se pueden omitir paréntesis: x => x*2.'
+    },
+    {
+      q: '17) ¿Qué significa "parámetro rest" en una función?',
+      options: ['Convierte parámetros en objeto global', 'Recoge un número variable de argumentos en un array', 'Impide pasar más de 2 argumentos'],
+      correct: 1,
+      exp: '...args en parámetros (último) recoge el resto en un array.'
+    },
+    {
+      q: '18) ¿Cómo pasarías un array params como argumentos a funcion1(a,b,c)?',
+      options: ['funcion1(...params)', 'funcion1([params])', 'funcion1(params...)'],
+      correct: 0,
+      exp: 'Spread: ...params expande el array en argumentos individuales.'
+    },
+    {
+      q: '19) ¿Qué es una closure?',
+      options: ['Una variable global', 'Una función que mantiene referencia a su ámbito externo tras ejecutarse', 'Un tipo de objeto Date'],
+      correct: 1,
+      exp: 'Closure: función que “recuerda” variables del scope exterior aunque ese scope haya terminado.'
+    },
+    {
+      q: '20) ¿Qué ventaja práctica ofrece una closure en un contador?',
+      options: ['Permite acceder al valor desde cualquier sitio como global', 'Permite mantener estado privado sin exponer la variable', 'Impide que la función se ejecute más de una vez'],
+      correct: 1,
+      exp: 'Se conserva el estado (cuenta) sin que sea accesible directamente desde fuera.'
+    },
+
+    // Objetos: literales, propiedades, in, destructuring, referencia/copia, this, prototipos, clases, JSON
+    {
+      q: '21) ¿Cuál es la manera más sencilla de crear un objeto en JavaScript?',
+      options: ['Mediante un literal {}', 'Usando siempre new', 'Solo con class'],
+      correct: 0,
+      exp: 'La forma más simple es un literal: let o = { ... }.'
+    },
+    {
+      q: '22) ¿Cómo se añade una propiedad a un objeto existente?',
+      options: ['obj.add(prop)', 'obj.prop = valor', 'Solo con Object.clone'],
+      correct: 1,
+      exp: 'Asignación directa: obj.nueva = 123 o obj["nueva"]=123.'
+    },
+    {
+      q: '23) Si accedes a una propiedad inexistente de un objeto, ¿qué devuelve?',
+      options: ['null', 'undefined', 'Error'],
+      correct: 1,
+      exp: 'No da error: devuelve undefined.'
+    },
+    {
+      q: '24) ¿Qué operador comprueba si una propiedad existe en un objeto?',
+      options: ['exists', 'in', 'has'],
+      correct: 1,
+      exp: '"prop" in obj devuelve true/false.'
+    },
+    {
+      q: '25) ¿Qué bucle se usa para iterar PROPIEDADES de un objeto?',
+      options: ['for in', 'for of', 'while of'],
+      correct: 0,
+      exp: 'for...in recorre claves/propiedades enumerables.'
+    },
+    {
+      q: '26) En asignación desestructurante de objetos, la asignación se realiza por…',
+      options: ['posición', 'nombre de propiedad', 'tipo de dato'],
+      correct: 1,
+      exp: 'En objetos se desestructura por nombre: const {edad} = persona.'
+    },
+    {
+      q: '27) ¿Qué ocurre al hacer let b = a si a es un objeto?',
+      options: ['Se copia el objeto completo', 'b referencia el mismo objeto', 'b se convierte en string'],
+      correct: 1,
+      exp: 'Las variables guardan referencias. b y a apuntan al mismo objeto.'
+    },
+    {
+      q: '28) ¿Qué método se menciona para copiar propiedades de un objeto a otro (copia superficial)?',
+      options: ['Object.assign(dest, src)', 'Object.create(src)', 'JSON.clone(src)'],
+      correct: 0,
+      exp: 'Object.assign copia propiedades enumerables (shallow copy).'
+    },
+    {
+      q: '29) ¿Qué es this en un método de objeto (en ejecución)?',
+      options: ['Siempre apunta al objeto donde se definió', 'Depende de cómo se invoque la función', 'Es siempre window'],
+      correct: 1,
+      exp: 'this se decide en el lugar de ejecución: enlace implícito/explicito/new, etc.'
+    },
+    {
+      q: '30) ¿Cuál NO es un método para enlazar explícitamente this en funciones normales?',
+      options: ['call', 'apply', 'attach'],
+      correct: 2,
+      exp: 'call/apply/bind existen; attach no es un método estándar para this.'
+    },
+    {
+      q: '31) ¿Cuál es el orden correcto (simplificado) para decidir this según las reglas vistas?',
+      options: ['new → enlace explícito → enlace implícito → global/undefined (estricto)', 'implícito → new → global → explícito', 'siempre global → explícito → implícito → new'],
+      correct: 0,
+      exp: 'Reglas: new, luego call/apply/bind, luego implícito, y si no: global/undefined en estricto.'
+    },
+    {
+      q: '32) Para crear un objeto a enlazado con prototipo b, ¿qué se usa?',
+      options: ['a = Object.create(b)', 'b = Object.create(a)', 'a = Object.assign(b)'],
+      correct: 0,
+      exp: 'Object.create(prototipo) crea un nuevo objeto con ese prototipo.'
+    },
+    {
+      q: '33) ¿Qué prototipo es el “base” al que suelen enlazarse los objetos?',
+      options: ['Object.prototype', 'Array.prototype', 'Date.prototype'],
+      correct: 0,
+      exp: 'Object.prototype es el prototipo base común de la mayoría de objetos.'
+    },
+    {
+      q: '34) ¿Qué palabra reservada se usa para definir una clase?',
+      options: ['class', 'object', 'prototype'],
+      correct: 0,
+      exp: 'class define una sintaxis “amigable”, aunque internamente sigue usando prototipos.'
+    },
+    {
+      q: '35) Si extiendes una clase y sobrescribes su constructor, debes llamar a…',
+      options: ['this()', 'super()', 'prototype()'],
+      correct: 1,
+      exp: 'super() llama al constructor del prototipo/clase base.'
+    },
+    {
+      q: '36) ¿Para qué sirve JSON.stringify?',
+      options: ['Convertir JSON a objeto', 'Convertir objeto a cadena JSON', 'Validar un array'],
+      correct: 1,
+      exp: 'JSON.stringify(obj) => string JSON.'
+    },
+    {
+      q: '37) ¿Para qué sirve JSON.parse?',
+      options: ['Convertir cadena JSON a objeto', 'Convertir objeto a JSON', 'Crear un prototipo'],
+      correct: 0,
+      exp: 'JSON.parse(textoJSON) => objeto JavaScript.'
+    },
+
+    // Módulos + funcional + errores
+    {
+      q: '38) Para usar import/export en HTML, ¿qué atributo debe tener <script>?',
+      options: ['type="text/javascript"', 'type="module"', 'type="application/json"'],
+      correct: 1,
+      exp: 'Para módulos ES6 en HTML: <script type="module"> ... </script>.'
+    },
+    {
+      q: '39) ¿Qué método de array devuelve el PRIMER elemento que cumple una condición?',
+      options: ['filter', 'find', 'forEach'],
+      correct: 1,
+      exp: 'find devuelve el primer elemento coincidente; filter devuelve un array con todos.'
+    },
+    {
+      q: '40) En manejo de errores, ¿qué propiedad de Error indica la traza de ejecución (stack trace)?',
+      options: ['name', 'message', 'stack'],
+      correct: 2,
+      exp: 'error.stack suele incluir la ruta de llamadas que provocó el error.'
+    }
+  ];
+
+  const quizEl = document.getElementById('quiz');
+  const resultEl = document.getElementById('result');
+  const answeredPill = document.getElementById('answeredPill');
+
+  function render() {
+    quizEl.innerHTML = '';
+    questions.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.qindex = String(idx);
+
+      const title = document.createElement('h3');
+      title.className = 'q-title';
+      title.textContent = item.q;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `Pregunta ${idx + 1} de ${questions.length}`;
+
+      const opts = document.createElement('div');
+      opts.className = 'opts';
+
+      item.options.forEach((optText, oIdx) => {
+        const id = `q${idx}_o${oIdx}`;
+        const label = document.createElement('label');
+        label.className = 'opt';
+        label.htmlFor = id;
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = `q${idx}`;
+        radio.id = id;
+        radio.value = String(oIdx);
+        radio.addEventListener('change', updateAnswered);
+
+        const span = document.createElement('span');
+        span.textContent = optText;
+
+        label.appendChild(radio);
+        label.appendChild(span);
+        opts.appendChild(label);
+      });
+
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback';
+      feedback.id = `fb_${idx}`;
+
+      card.appendChild(title);
+      card.appendChild(meta);
+      card.appendChild(opts);
+      card.appendChild(feedback);
+      quizEl.appendChild(card);
+    });
+
+    updateAnswered();
+    resultEl.textContent = '';
+  }
+
+  function getUserAnswer(qIndex) {
+    const checked = document.querySelector(`input[name="q${qIndex}"]:checked`);
+    return checked ? Number(checked.value) : null;
+  }
+
+  function updateAnswered() {
+    let answered = 0;
+    for (let i = 0; i < questions.length; i++) {
+      if (getUserAnswer(i) !== null) answered++;
+    }
+    answeredPill.textContent = `${answered}/${questions.length} respondidas`;
+  }
+
+  function grade() {
+    let correctCount = 0;
+
+    for (let i = 0; i < questions.length; i++) {
+      const user = getUserAnswer(i);
+      const isCorrect = (user === questions[i].correct);
+
+      if (isCorrect) correctCount++;
+
+      const fb = document.getElementById(`fb_${i}`);
+      fb.style.display = 'block';
+      fb.classList.remove('ok', 'bad');
+      fb.classList.add(isCorrect ? 'ok' : 'bad');
+
+      const correctText = questions[i].options[questions[i].correct];
+      const userText = (user === null) ? '(sin responder)' : questions[i].options[user];
+
+      fb.innerHTML = `
+        <strong>${isCorrect ? '✅ Correcta' : '❌ Incorrecta'}</strong><br/>
+        Tu respuesta: <em>${escapeHtml(userText)}</em><br/>
+        Respuesta correcta: <em>${escapeHtml(correctText)}</em><br/>
+        <span>${escapeHtml(questions[i].exp)}</span>
+      `;
+    }
+
+    const pct = Math.round((correctCount / questions.length) * 100);
+    resultEl.innerHTML = `Resultado: <strong>${correctCount}/${questions.length}</strong> (${pct}%)`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetAll() {
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.feedback').forEach(fb => {
+      fb.style.display = 'none';
+      fb.classList.remove('ok','bad');
+      fb.textContent = '';
+    });
+    resultEl.textContent = '';
+    updateAnswered();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  document.getElementById('btnGrade').addEventListener('click', grade);
+  document.getElementById('btnReset').addEventListener('click', resetAll);
+
+  render();
+</script>
+</body>
+</html>
