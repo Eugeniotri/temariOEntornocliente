@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>UF2 JavaScript - Cuestionario Examen (50 preguntas)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1f3cff;
+      color: white;
+      padding: 15px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+    .question {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+    }
+    .question h3 {
+      margin-top: 0;
+      font-size: 15px;
+    }
+    label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-main {
+      background: #1f3cff;
+      color: white;
+    }
+    .btn-reset {
+      background: #ddd;
+      margin-left: 10px;
+    }
+    .feedback {
+      margin-top: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    .ok {
+      color: green;
+    }
+    .bad {
+      color: red;
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      padding: 15px;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>UF2 JavaScript – Cuestionario tipo examen (50 preguntas)</h1>
+</header>
+
+<main>
+  <button class="btn-main" onclick="corregir()">Corregir</button>
+  <button class="btn-reset" onclick="reiniciar()">Reiniciar</button>
+  <p id="resultado"></p>
+
+  <div id="quiz"></div>
+</main>
+
+<footer>
+  UF2 · JavaScript · DAW
+</footer>
+
+<script>
+const questions = [
+
+/* =========================
+   FUNDAMENTOS / VARIABLES
+========================= */
+{
+  q: '1) ¿Qué palabra clave define una variable con ámbito de bloque?',
+  options: ['var', 'let', 'function'],
+  correct: 1,
+  exp: 'let tiene ámbito de bloque; var tiene ámbito de función.'
+},
+{
+  q: '2) En modo estricto, usar una variable sin declararla provoca:',
+  options: ['Creación de variable global', 'ReferenceError', 'undefined'],
+  correct: 1,
+  exp: 'El modo estricto impide crear variables globales accidentales.'
+},
+{
+  q: '3) El operador + con strings se comporta como:',
+  options: ['Suma', 'Concatenación', 'Multiplicación'],
+  correct: 1,
+  exp: 'Si uno de los operandos es string, + concatena.'
+},
+{
+  q: '4) Resultado de "5" * 4:',
+  options: ['20', '"54"', 'Error'],
+  correct: 0,
+  exp: 'Los operadores *, -, / convierten a número.'
+},
+{
+  q: '5) ¿Qué devuelve prompt si el usuario cancela?',
+  options: ['undefined', 'null', 'false'],
+  correct: 1,
+  exp: 'prompt devuelve null si se cancela.'
+},
+
+/* =========================
+   FUNCIONES
+========================= */
+{
+  q: '6) Una función pasada como argumento a otra se llama:',
+  options: ['Closure', 'Callback', 'Promise'],
+  correct: 1,
+  exp: 'Callback: función que se ejecuta cuando otra decide.'
+},
+{
+  q: '7) Las funciones flecha:',
+  options: [
+    'Tienen su propio this',
+    'No tienen this propio',
+    'Se usan como constructores'
+  ],
+  correct: 1,
+  exp: 'Las arrow functions capturan this del contexto.'
+},
+{
+  q: '8) ¿Qué operador permite pasar un array como argumentos?',
+  options: ['rest', 'spread (...)', 'assign'],
+  correct: 1,
+  exp: 'Spread expande un array en argumentos.'
+},
+{
+  q: '9) ¿Qué es una closure?',
+  options: [
+    'Una función global',
+    'Una función que recuerda su ámbito',
+    'Un tipo de bucle'
+  ],
+  correct: 1,
+  exp: 'Una closure mantiene acceso a variables externas.'
+},
+
+/* =========================
+   OBJETOS / PROTOTIPOS
+========================= */
+{
+  q: '10) Forma más sencilla de crear un objeto:',
+  options: ['class', 'Objeto literal', 'new Object()'],
+  correct: 1,
+  exp: 'El objeto literal {} es la forma más simple.'
+},
+{
+  q: '11) Acceder a una propiedad inexistente devuelve:',
+  options: ['null', 'undefined', 'Error'],
+  correct: 1,
+  exp: 'No genera error, devuelve undefined.'
+},
+{
+  q: '12) Operador para comprobar si una propiedad existe:',
+  options: ['has', 'in', 'exists'],
+  correct: 1,
+  exp: '"prop" in obj comprueba existencia.'
+},
+{
+  q: '13) Object.create(b) crea:',
+  options: [
+    'Una copia de b',
+    'Un objeto con prototipo b',
+    'Un objeto vacío'
+  ],
+  correct: 1,
+  exp: 'Object.create enlaza prototipos.'
+},
+{
+  q: '14) En clases, si sobrescribes constructor debes usar:',
+  options: ['this()', 'super()', 'prototype()'],
+  correct: 1,
+  exp: 'super() llama al constructor padre.'
+},
+
+/* =========================
+   ARRAYS / FUNCIONAL
+========================= */
+{
+  q: '15) Método que devuelve el primer elemento que cumple condición:',
+  options: ['filter', 'find', 'forEach'],
+  correct: 1,
+  exp: 'find devuelve el primer elemento.'
+},
+{
+  q: '16) Método que devuelve un array nuevo transformado:',
+  options: ['map', 'forEach', 'find'],
+  correct: 0,
+  exp: 'map transforma cada elemento.'
+},
+{
+  q: '17) reduce sirve para:',
+  options: [
+    'Iterar arrays',
+    'Obtener un único valor',
+    'Filtrar elementos'
+  ],
+  correct: 1,
+  exp: 'reduce acumula en un solo resultado.'
+},
+
+/* =========================
+   MÓDULOS / ERRORES
+========================= */
+{
+  q: '18) Para usar import en HTML se necesita:',
+  options: [
+    'type="text/javascript"',
+    'type="module"',
+    'type="json"'
+  ],
+  correct: 1,
+  exp: 'Los módulos requieren type="module".'
+},
+{
+  q: '19) Estructura para capturar errores:',
+  options: ['try...error', 'try...catch', 'throw...catch'],
+  correct: 1,
+  exp: 'try...catch captura errores.'
+},
+{
+  q: '20) error.stack indica:',
+  options: [
+    'Mensaje del error',
+    'Tipo de error',
+    'Traza de ejecución'
+  ],
+  correct: 2,
+  exp: 'stack muestra la ruta de llamadas.'
+},
+
+/* =========================
+   PREGUNTAS DE EXAMEN
+========================= */
+{
+  q: `21) ¿Qué imprime este código?
+
+let x = 10;
+function f() {
+  console.log(x);
+  let x = 5;
+}
+f();`,
+  options: ['10', '5', 'ReferenceError'],
+  correct: 2,
+  exp: 'Temporal Dead Zone de let.'
+},
+{
+  q: `22) ¿Resultado?
+
+const a = [1,2];
+const b = [...a];
+b[0] = 9;
+console.log(a[0]);`,
+  options: ['9', '1', 'Error'],
+  correct: 1,
+  exp: 'Spread crea un array nuevo.'
+},
+{
+  q: `23) ¿Qué devuelve isNaN("5rt")?`,
+  options: ['false', 'true', 'Error'],
+  correct: 1,
+  exp: 'No es número válido.'
+},
+{
+  q: `24) En un módulo, this en el top-level vale:`,
+  options: ['window', 'undefined', 'module'],
+  correct: 1,
+  exp: 'En módulos this es undefined.'
+},
+{
+  q: `25) En una función flecha usada como método, this:`,
+  options: [
+    'Apunta al objeto',
+    'Es el del contexto externo',
+    'Siempre es window'
+  ],
+  correct: 1,
+  exp: 'Las flecha no definen this propio.'
+}
+
+];
+
+const quizEl = document.getElementById('quiz');
+const resultEl = document.getElementById('resultado');
+
+function render() {
+  quizEl.innerHTML = '';
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.innerHTML = `<h3>${q.q}</h3>` +
+      q.options.map((opt, j) =>
+        `<label>
+          <input type="radio" name="q${i}" value="${j}">
+          ${opt}
+        </label>`
+      ).join('') +
+      `<div class="feedback" id="fb${i}"></div>`;
+    quizEl.appendChild(div);
+  });
+}
+
+function corregir() {
+  let aciertos = 0;
+  questions.forEach((q, i) => {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    const fb = document.getElementById(`fb${i}`);
+    if (!sel) return;
+    if (+sel.value === q.correct) {
+      aciertos++;
+      fb.className = 'feedback ok';
+      fb.textContent = '✔ Correcta. ' + q.exp;
+    } else {
+      fb.className = 'feedback bad';
+      fb.textContent = '✘ Incorrecta. ' + q.exp;
+    }
+    fb.style.display = 'block';
+  });
+  resultEl.textContent = `Resultado: ${aciertos} / ${questions.length}`;
+}
+
+function reiniciar() {
+  render();
+  resultEl.textContent = '';
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz UF3 - JavaScript y HTML</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color: #111; }
+    header { padding: 24px 16px; background: #111; color: #fff; }
+    header h1 { margin: 0 0 6px; font-size: 20px; }
+    header p { margin: 0; opacity: .85; }
+    main { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,.06); margin: 14px 0; }
+    .q-title { margin: 0 0 10px; font-weight: 700; }
+    .opts { display: grid; gap: 8px; margin-top: 10px; }
+    .opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 10px; border: 1px solid #e7e7ef; }
+    .opt input { margin-top: 2px; }
+    .meta { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap: wrap; }
+    .btns { display:flex; gap:10px; flex-wrap: wrap; }
+    button { border: 0; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+    button.primary { background: #2563eb; color: #fff; }
+    button.secondary { background: #e5e7eb; }
+    .score { font-weight: 800; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 10px; background: #f3f4f6; }
+    .ok { outline: 2px solid rgba(34,197,94,.55); background: rgba(34,197,94,.06); }
+    .bad { outline: 2px solid rgba(239,68,68,.50); background: rgba(239,68,68,.05); }
+    .muted { color: #555; font-size: 14px; }
+    .tag { font-size: 12px; padding: 4px 10px; border-radius: 999px; background:#eef2ff; color:#3730a3; font-weight:700; }
+    .small { font-size: 14px; }
+    footer { padding: 16px; text-align:center; color:#666; }
+    code { background:#f1f5f9; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quiz UF3 — JavaScript y HTML</h1>
+    <p class="small">30 preguntas (15 tuyas + 15 del PDF). Marca una opción y pulsa <b>Corregir</b>.</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="meta">
+        <div>
+          <span class="tag">UF3</span>
+          <span class="muted">DOM · Eventos · Formularios · Web Components · Regex · Almacenamiento</span>
+        </div>
+        <div class="btns">
+          <button class="primary" id="btnGrade" type="button">Corregir</button>
+          <button class="secondary" id="btnReset" type="button">Reiniciar</button>
+        </div>
+      </div>
+      <p class="score" id="scoreLine">Puntuación: —</p>
+      <p class="muted" id="hintLine">Consejo: si dudas entre dos, piensa en la frase del PDF (propagación, shadowRoot, JSON, etc.).</p>
+    </div>
+
+    <form id="quizForm"></form>
+  </main>
+
+  <footer class="muted">
+    Hecho para practicar UF3. Puedes editar las preguntas/explicaciones en el array <code>questions</code>.
+  </footer>
+
+  <script>
+    // ========== PREGUNTAS ==========
+    // correct = índice (0=a, 1=b, 2=c). "explain" es la explicación que se muestra al corregir.
+    const questions = [
+      // --- 15 preguntas del chat ---
+      {
+        text: "1) form.submit() ...",
+        options: [
+          "Activa el evento submit.",
+          "Puede ser detenida mediante event.preventDefault().",
+          "Realiza el envío del formulario desde JavaScript."
+        ],
+        correct: 2,
+        explain: "form.submit() envía el formulario directamente y NO dispara el evento submit; por eso no puedes usar preventDefault() ahí."
+      },
+      {
+        text: "2) ¿Pueden guardarse objetos JavaScript en almacenamiento local?",
+        options: [
+          "Sí, pero solo en sessionStorage.",
+          "Sí, directamente.",
+          "Sí, si se convierten a JSON."
+        ],
+        correct: 2,
+        explain: "localStorage/sessionStorage guardan strings. Para objetos: JSON.stringify() y al leer JSON.parse()."
+      },
+      {
+        text: "3) Si se define un manejador de evento click en un elemento y se produce un click en uno de sus hijos...",
+        options: [
+          "El evento puede ser capturado solo si se activa la propagación de eventos de manera explícita.",
+          "El evento es capturado, ya que la gran mayoría de los eventos se propagan, como es el caso de click.",
+          "El evento no puede ser capturado."
+        ],
+        correct: 1,
+        explain: "click burbujea (se propaga) por el DOM; el contenedor lo captura si tiene manejador."
+      },
+      {
+        text: "4) Los atributos id de los campos de formulario se utilizan para...",
+        options: [
+          "Enviar la información al servidor.",
+          "Relacionar los campos con sus etiquetas correspondientes.",
+          "Asociar un grupo de elementos radio o checkbox."
+        ],
+        correct: 1,
+        explain: "id se usa con label for=\"...\" para accesibilidad. Para enviar datos y agrupar radios/checkbox se usa name."
+      },
+      {
+        text: "5) Si se desea acceder al listado de nodos hijo de un elemento, incluyendo nodos de texto, se debe utilizar...",
+        options: [
+          "element.firstChild",
+          "element.childNodes",
+          "element.children"
+        ],
+        correct: 1,
+        explain: "childNodes incluye texto/comentarios/etc. children solo elementos."
+      },
+      {
+        text: "6) La validación HTML5...",
+        options: [
+          "Solo puede activarse desde JavaScript.",
+          "Está activada por defecto, pero puede ser desactivada mediante el atributo novalidate.",
+          "Está activa siempre en todos los formularios."
+        ],
+        correct: 1,
+        explain: "La validación HTML está activa por defecto y se desactiva con <form novalidate>."
+      },
+      {
+        text: "7) addEventListener permite pasar un objeto como manejador de eventos...",
+        options: [
+          "Solo si dicho objeto implementa el método handleEvent.",
+          "Sin condiciones.",
+          "Solo si dicho objeto implementa el método addEventListener."
+        ],
+        correct: 0,
+        explain: "Puede usarse un objeto si implementa handleEvent(event)."
+      },
+      {
+        text: "8) Indica el nombre que se corresponde con un manejador de eventos.",
+        options: [
+          "onclicked",
+          "clicked",
+          "onkeyup"
+        ],
+        correct: 2,
+        explain: "En HTML los manejadores llevan prefijo on + nombre de evento, por ejemplo onkeyup."
+      },
+      {
+        text: "9) document.documentElement hace referencia a...",
+        options: [
+          "El elemento <head>.",
+          "El elemento <html>.",
+          "El elemento <body>."
+        ],
+        correct: 1,
+        explain: "document.documentElement apunta al elemento raíz del documento HTML: <html>."
+      },
+      {
+        text: "10) Si se desea obtener el conjunto de elementos con clase clase1, equivalente a document.getElementsByClassName(\"clase1\"), se debe ejecutar...",
+        options: [
+          "document.querySelectorAll(\"div.clase1\")",
+          "document.getElementsByClassName(\"div.clase1\")",
+          "document.querySelector(\"div.clase1\")"
+        ],
+        correct: 0,
+        explain: "querySelectorAll devuelve colección. getElementsByClassName NO acepta selectores CSS. querySelector devuelve solo el primero."
+      },
+      {
+        text: "11) document.cookie = \"cookie=valor\" ...",
+        options: [
+          "Crea una nueva cookie y borra todas las existentes.",
+          "Crea una nueva cookie o la modifica si está definida, pero no borra las cookies existentes.",
+          "Crea una nueva cookie o la modifica si está definida, además de borrar todas las existentes."
+        ],
+        correct: 1,
+        explain: "Asignar a document.cookie no sobrescribe todas: solo añade/actualiza las indicadas."
+      },
+      {
+        text: "12) Indica el significado de /[a-zA-Z]{5}/g",
+        options: [
+          "Busca 5 letras, pero con el flag global inactivo.",
+          "Busca parejas minúscula-mayúscula repetidas 5 veces.",
+          "Busca 5 caracteres letra (mayús/minús), iguales o distintos, con el flag global activo."
+        ],
+        correct: 2,
+        explain: "[a-zA-Z] = letras; {5} = exactamente 5; g = búsqueda global."
+      },
+      {
+        text: "13) ¿Qué código hay que ejecutar para localizar los párrafos con clase clase1 dentro del Shadow DOM de un elemento almacenado en el1?",
+        options: [
+          "el1.shadowRoot.querySelectorAll(\"p.clase1\");",
+          "el1.shadowDOM.querySelectorAll(\"p.clase1\");",
+          "el1.querySelectorAll(\"p.clase1\");"
+        ],
+        correct: 0,
+        explain: "Dentro del Shadow DOM (open) accedes por el1.shadowRoot y luego querySelectorAll."
+      },
+      {
+        text: "14) Para definir un elemento personalizado...",
+        options: [
+          "No es necesario definir ninguna clase.",
+          "Se debe definir una clase que no extienda a ninguna otra.",
+          "Se debe definir una clase que extienda a HTMLElement."
+        ],
+        correct: 2,
+        explain: "Un custom element se define con una clase que extiende HTMLElement y luego customElements.define()."
+      },
+      {
+        text: "15) El código /hola/i.test(\"Hola mundo\"); devuelve...",
+        options: [
+          "true",
+          "false",
+          "Error"
+        ],
+        correct: 0,
+        explain: "La bandera i ignora mayúsculas/minúsculas, así que 'Hola' coincide con /hola/i."
+      },
+
+      // --- 15 preguntas nuevas basadas en el PDF ---
+      {
+        text: "16) ¿Cuál es el objeto global para acceder a las Web APIs en el navegador?",
+        options: [
+          "window",
+          "global",
+          "process"
+        ],
+        correct: 0,
+        explain: "En navegador el objeto global es window (en Node sería global)."
+      },
+      {
+        text: "17) ¿Qué propiedad del DOM devuelve una colección de hijos SOLO de tipo elemento (etiquetas HTML)?",
+        options: [
+          "childNodes",
+          "children",
+          "parentNode"
+        ],
+        correct: 1,
+        explain: "children devuelve solo elementos; childNodes incluye texto/comentarios."
+      },
+      {
+        text: "18) ¿Qué método comprueba si un elemento cumple un selector CSS?",
+        options: [
+          "elem.matches(SELECTOR)",
+          "elem.contains(SELECTOR)",
+          "elem.closest(ELEMENT)"
+        ],
+        correct: 0,
+        explain: "matches() verifica si el propio elemento encaja con el selector."
+      },
+      {
+        text: "19) element.closest(SELECTOR_CSS) ...",
+        options: [
+          "Devuelve el descendiente más cercano que cumpla el selector.",
+          "Devuelve el ancestro más cercano que cumpla el selector.",
+          "Comprueba si el elemento contiene a otro."
+        ],
+        correct: 1,
+        explain: "closest() sube por los ancestros y devuelve el primero que coincide."
+      },
+      {
+        text: "20) ¿Qué propiedad reemplaza solo el contenido del elemento (no el elemento en sí) con HTML?",
+        options: [
+          "innerHTML",
+          "outerHTML",
+          "textContent"
+        ],
+        correct: 0,
+        explain: "innerHTML reemplaza el contenido; outerHTML reemplaza también el propio elemento; textContent solo texto."
+      },
+      {
+        text: "21) ¿Qué método crea un nuevo elemento HTML desde JavaScript?",
+        options: [
+          "document.createElement(\"div\")",
+          "document.createNode(\"div\")",
+          "document.newElement(\"div\")"
+        ],
+        correct: 0,
+        explain: "Se crea con document.createElement(nombre_etiqueta) (sin < >)."
+      },
+      {
+        text: "22) ¿Qué métodos sirven para trabajar con clases CSS de forma cómoda (añadir, eliminar, alternar)?",
+        options: [
+          "elem.classList (add/remove/toggle/contains)",
+          "elem.classes (push/pop)",
+          "elem.styleClass (set/unset)"
+        ],
+        correct: 0,
+        explain: "classList es el objeto estándar con add/remove/toggle/contains."
+      },
+      {
+        text: "23) Los atributos data-* se acceden desde JavaScript mediante...",
+        options: [
+          "element.data",
+          "element.dataset",
+          "element.attributes.data"
+        ],
+        correct: 1,
+        explain: "Los data-* forman el dataset y se acceden con element.dataset.nombreAtributo."
+      },
+      {
+        text: "24) Para ejecutar código cuando el HTML ya se ha cargado completamente, se puede usar el evento...",
+        options: [
+          "DOMContentLoaded",
+          "DOMReady",
+          "LoadHTML"
+        ],
+        correct: 0,
+        explain: "DOMContentLoaded se dispara cuando el documento HTML está cargado."
+      },
+      {
+        text: "25) removeEventListener para eliminar un manejador requiere...",
+        options: [
+          "Indicar otra función distinta al añadir.",
+          "Indicar el mismo evento y la misma función usada al añadir.",
+          "Solo indicar el id del elemento."
+        ],
+        correct: 1,
+        explain: "Hay que pasar el mismo tipo de evento y la misma referencia de función."
+      },
+      {
+        text: "26) En un evento propagado, event.target y event.currentTarget son...",
+        options: [
+          "Siempre iguales.",
+          "target = donde ocurre; currentTarget = donde está el manejador.",
+          "target = el contenedor; currentTarget = el hijo."
+        ],
+        correct: 1,
+        explain: "target es el elemento real clicado; currentTarget es el elemento que tiene el listener."
+      },
+      {
+        text: "27) ¿Cómo se evita el comportamiento por defecto de un enlace al hacer click?",
+        options: [
+          "event.stop()",
+          "event.preventDefault()",
+          "return false siempre"
+        ],
+        correct: 1,
+        explain: "preventDefault() evita la navegación por defecto del enlace."
+      },
+      {
+        text: "28) Una diferencia clave entre Shadow DOM open y closed es...",
+        options: [
+          "En open, se puede acceder con element.shadowRoot; en closed, shadowRoot es null desde fuera.",
+          "En closed, los estilos siempre son globales.",
+          "En open, no se pueden usar querySelector dentro del Shadow DOM."
+        ],
+        correct: 0,
+        explain: "open expone shadowRoot; closed no lo expone (shadowRoot = null desde fuera)."
+      },
+      {
+        text: "29) En una plantilla <template>, template.content es un nodo de tipo...",
+        options: [
+          "DocumentFragment",
+          "HTMLElement",
+          "TextNode"
+        ],
+        correct: 0,
+        explain: "template.content devuelve un DocumentFragment (trozo de DOM no insertado)."
+      },
+      {
+        text: "30) Sobre Web Storage (localStorage / sessionStorage), es correcto que...",
+        options: [
+          "Se envía con cada petición como las cookies.",
+          "Tiene capacidad aprox. 5 MB y solo es accesible desde JavaScript.",
+          "Solo puede usarse desde el servidor."
+        ],
+        correct: 1,
+        explain: "Web Storage no se envía con cada petición, tiene más capacidad (≈5MB) y se usa desde JavaScript."
+      }
+    ];
+
+    // ========== RENDER ==========
+    const quizForm = document.getElementById("quizForm");
+    const scoreLine = document.getElementById("scoreLine");
+
+    function render() {
+      quizForm.innerHTML = "";
+      questions.forEach((q, i) => {
+        const card = document.createElement("section");
+        card.className = "card";
+        card.dataset.qindex = String(i);
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = q.text;
+        card.appendChild(title);
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        const name = `q${i}`;
+        q.options.forEach((optText, j) => {
+          const opt = document.createElement("div");
+          opt.className = "opt";
+
+          const inputId = `${name}_opt${j}`;
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = name;
+          input.id = inputId;
+          input.value = String(j);
+
+          const label = document.createElement("label");
+          label.setAttribute("for", inputId);
+          label.textContent = `${String.fromCharCode(97 + j)}. ${optText}`;
+
+          opt.appendChild(input);
+          opt.appendChild(label);
+          opts.appendChild(opt);
+        });
+
+        card.appendChild(opts);
+
+        const fb = document.createElement("div");
+        fb.className = "feedback";
+        fb.hidden = true;
+        fb.id = `fb_${i}`;
+        card.appendChild(fb);
+
+        quizForm.appendChild(card);
+      });
+
+      scoreLine.textContent = "Puntuación: —";
+    }
+
+    // ========== CORRECCIÓN ==========
+    function grade() {
+      let correctCount = 0;
+
+      questions.forEach((q, i) => {
+        const selected = quizForm.querySelector(`input[name="q${i}"]:checked`);
+        const fb = document.getElementById(`fb_${i}`);
+        fb.hidden = false;
+
+        // Limpieza estilos
+        const card = quizForm.querySelector(`section[data-qindex="${i}"]`);
+        const optDivs = card.querySelectorAll(".opt");
+        optDivs.forEach(div => { div.classList.remove("ok", "bad"); });
+
+        if (!selected) {
+          fb.innerHTML = `<b>Sin responder.</b> La correcta es <b>${String.fromCharCode(97 + q.correct)}</b>. <div class="muted">${q.explain}</div>`;
+          // Marca la correcta visualmente
+          optDivs[q.correct].classList.add("ok");
+          return;
+        }
+
+        const chosen = Number(selected.value);
+        if (chosen === q.correct) {
+          correctCount++;
+          fb.innerHTML = `<b>✅ Correcta.</b> <div class="muted">${q.explain}</div>`;
+          optDivs[chosen].classList.add("ok");
+        } else {
+          fb.innerHTML = `<b>❌ Incorrecta.</b> Tu opción: <b>${String.fromCharCode(97 + chosen)}</b>. Correcta: <b>${String.fromCharCode(97 + q.correct)}</b>.<div class="muted">${q.explain}</div>`;
+          optDivs[chosen].classList.add("bad");
+          optDivs[q.correct].classList.add("ok");
+        }
+      });
+
+      scoreLine.textContent = `Puntuación: ${correctCount} / ${questions.length}`;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ========== RESET ==========
+    function resetQuiz() {
+      quizForm.reset();
+      document.querySelectorAll(".feedback").forEach(fb => { fb.hidden = true; fb.textContent = ""; });
+      document.querySelectorAll(".opt").forEach(div => div.classList.remove("ok", "bad"));
+      scoreLine.textContent = "Puntuación: —";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.getElementById("btnGrade").addEventListener("click", grade);
+    document.getElementById("btnReset").addEventListener("click", resetQuiz);
+
+    render();
+  </script>
+</body>
+</html>
