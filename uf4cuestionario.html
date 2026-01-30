@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz UF4 - Programación asíncrona (DWEC)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+    h1 { margin-bottom: 6px; }
+    .sub { margin-top: 0; color: #444; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin: 14px 0; }
+    .q-title { font-weight: bold; margin-bottom: 10px; }
+    label { display: block; margin: 6px 0; cursor: pointer; }
+    .actions { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+    button { padding: 10px 14px; border: 0; border-radius: 10px; cursor: pointer; }
+    button#btnCorregir { background: #111; color: #fff; }
+    button#btnReiniciar { background: #eee; }
+    .result { padding: 12px; border-radius: 10px; background: #f6f6f6; border: 1px solid #e8e8e8; }
+    .ok { border-left: 6px solid #1a7f37; padding-left: 10px; margin-top: 10px; }
+    .ko { border-left: 6px solid #b42318; padding-left: 10px; margin-top: 10px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .small { font-size: 0.95rem; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.85rem; background: #eee; margin-left: 8px; }
+  </style>
+</head>
+
+<body>
+  <h1>Quiz UF4 — Programación asíncrona</h1>
+  <p class="sub">30 preguntas (15 vistas + 15 típicas de examen). Selecciona una opción por pregunta y pulsa <b>Corregir</b>.</p>
+
+  <div class="actions">
+    <button id="btnCorregir" type="button">Corregir</button>
+    <button id="btnReiniciar" type="button">Reiniciar</button>
+  </div>
+
+  <div id="resultado" class="result" aria-live="polite">
+    <b>Resultado:</b> <span class="muted">aún sin corregir</span>
+  </div>
+
+  <form id="quiz"></form>
+
+  <script>
+    // Quiz UF4 (DWEC) — 30 preguntas
+    // correct: índice de la opción correcta (0..n-1)
+    const preguntas = [
+      // --- 15 PREGUNTAS VISTAS ---
+      {
+        texto: "1) El callback hell o infierno de callbacks...",
+        opciones: [
+          "Se produce porque los callbacks utilizan el paradigma funcional de programación.",
+          "Se produce cuando se ejecutan callbacks en paralelo.",
+          "Se produce cuando se ejecutan callbacks en serie."
+        ],
+        correct: 2,
+        exp: "Callback hell aparece por anidación para ejecutar en serie (pirámide de la perdición)."
+      },
+      {
+        texto: "2) La función map...",
+        opciones: [
+          "Es una función callback.",
+          "Utiliza como parámetro una función callback.",
+          "Utiliza callbacks, pero solo si son asíncronos."
+        ],
+        correct: 1,
+        exp: "map recibe una función (callback) y es una operación síncrona."
+      },
+      {
+        texto: "3) Si se lanza un temporizador de 5 segundos mediante setTimeout, el callback...",
+        opciones: [
+          "Se ejecuta pasados 5 segundos. El programa no se queda bloqueado.",
+          "Se ejecuta inmediatamente después de ponerse en marcha el temporizador.",
+          "Se ejecuta pasados 5 segundos. El programa completo se queda bloqueado."
+        ],
+        correct: 0,
+        exp: "setTimeout no bloquea. El callback se ejecuta al pasar el tiempo."
+      },
+      {
+        texto: "4) Si se asigna una promesa a una variable...",
+        opciones: [
+          "La variable almacena el objeto promesa.",
+          "La variable almacena el valor devuelto por la promesa.",
+          "La variable almacena el valor devuelto por la promesa cuando el código asíncrono finalice."
+        ],
+        correct: 0,
+        exp: "Al asignar, guardas la promesa; el valor real llega con then/await."
+      },
+      {
+        texto: "5) Si se lanza un temporizador de 5 segundos con setTimeout, el callback...",
+        opciones: [
+          "Se ejecuta inmediatamente después de ponerse en marcha el temporizador.",
+          "Se ejecuta pasados 5 segundos. Hasta entonces, el programa completo queda bloqueado.",
+          "Se ejecuta pasados 5 segundos. Hasta entonces, el programa no se queda bloqueado."
+        ],
+        correct: 2,
+        exp: "Se ejecuta tras el tiempo. No bloquea el programa."
+      },
+      {
+        texto: "6) Si se utiliza async/await, los errores pueden procesarse mediante...",
+        opciones: [
+          "Manejadores de errores específicos de las funciones await.",
+          "El método await.catch.",
+          "Bloques try...catch convencionales.",
+          "El método Promise.catch()."
+        ],
+        correct: 2,
+        exp: "Con await, se usa try...catch para capturar rechazos como excepciones."
+      },
+      {
+        texto: "7) Los callbacks...",
+        opciones: [
+          "Son siempre síncronos.",
+          "Pueden ser síncronos o asíncronos.",
+          "Son siempre asíncronos."
+        ],
+        correct: 1,
+        exp: "Callback es una función pasada como parámetro; puede ejecutarse de forma síncrona o asíncrona."
+      },
+      {
+        texto: "8) La API fetch de JavaScript...",
+        opciones: [
+          "Define el método fetch junto con un conjunto de interfaces adicionales para trabajar con peticiones AJAX.",
+          "Está disponible también en NodeJS.",
+          "Define exclusivamente el método fetch.",
+          "Define un conjunto de funciones para realizar peticiones AJAX de manera síncrona."
+        ],
+        correct: 0,
+        exp: "Fetch incluye Request/Response/Headers/AbortController/FormData, etc., y es asíncrona."
+      },
+      {
+        texto: "9) En la actualidad, la mayoría de peticiones AJAX utilizan como formato de intercambio de datos...",
+        opciones: [
+          "XML.",
+          "YAML.",
+          "JSON."
+        ],
+        correct: 2,
+        exp: "Hoy se usa JSON en la inmensa mayoría de APIs web."
+      },
+      {
+        texto: "10) Las peticiones AJAX...",
+        opciones: [
+          "Se realizan en segundo plano, sin necesidad de recargar la página, mediante el envío de formularios HTML.",
+          "Se realizan recargando la página mediante JavaScript.",
+          "Se realizan en segundo plano, sin necesidad de recargar la página, mediante JavaScript.",
+          "Se realizan recargando la página mediante el envío de formularios HTML."
+        ],
+        correct: 2,
+        exp: "AJAX = solicitudes en segundo plano desde JS sin recargar la página."
+      },
+      {
+        texto: "11) Los tres estados en que se puede encontrar una promesa son...",
+        opciones: [
+          "Pendiente, resuelta y rechazada.",
+          "Iniciada, aceptada y cancelada.",
+          "Iniciada, resuelta y rechazada."
+        ],
+        correct: 0,
+        exp: "Estados: pending (pendiente), fulfilled (resuelta), rejected (rechazada)."
+      },
+      {
+        texto: "12) El valor devuelto por una promesa...",
+        opciones: [
+          "Es directamente accesible cuando se construye la promesa.",
+          "Es accesible dentro de la función que se pasa como parámetro a finally.",
+          "Es accesible dentro del método then directamente.",
+          "Es accesible dentro de la función que se pasa como parámetro a then."
+        ],
+        correct: 3,
+        exp: "El valor llega al callback de then (o usando await). finally no recibe el valor."
+      },
+      {
+        texto: "13) Si una función convencional devuelve un número y se usa con await...",
+        opciones: [
+          "Se convierte en async y la resolución no devuelve valor.",
+          "Se convierte en una promesa resuelta cuyo valor es el número original.",
+          "Se genera un error."
+        ],
+        correct: 1,
+        exp: "await sobre un valor normal equivale a Promise.resolve(valor)."
+      },
+      {
+        texto: "14) En let res = fetch('miurl.com');, ¿qué almacena res?",
+        opciones: [
+          "El contenido de la URL solicitada.",
+          "Un objeto Response.",
+          "Una promesa."
+        ],
+        correct: 2,
+        exp: "fetch devuelve una Promise que, al resolverse, da un Response."
+      },
+      {
+        texto: "15) Si dentro de una función A se llama a B con await...",
+        opciones: [
+          "Se suspende A hasta que B termine. El programa principal no se bloquea.",
+          "Se bloquea completamente el programa principal hasta que B termine.",
+          "A sigue ejecutando después de B, pero el programa se interrumpe al final de A hasta que B termine."
+        ],
+        correct: 0,
+        exp: "await pausa la función async actual, pero no bloquea el hilo principal."
+      },
+
+      // --- 15 PREGUNTAS EXTRA (muy de examen) ---
+      {
+        texto: "16) ¿Qué devuelve siempre el método then() de una promesa?",
+        opciones: [
+          "Un booleano.",
+          "Siempre devuelve otra promesa.",
+          "Devuelve el valor del callback directamente (sin promesa)."
+        ],
+        correct: 1,
+        exp: "then() siempre devuelve una promesa, permitiendo encadenamiento."
+      },
+      {
+        texto: "17) En un encadenamiento, si el callback de then devuelve un valor NO promesa...",
+        opciones: [
+          "Se pierde el valor y el siguiente then recibe undefined.",
+          "Ese valor se convierte automáticamente en una promesa resuelta y pasa al siguiente then.",
+          "El siguiente then no se ejecuta."
+        ],
+        correct: 1,
+        exp: "Un valor normal se envuelve como promesa resuelta para seguir encadenando."
+      },
+      {
+        texto: "18) Promise.all([...])...",
+        opciones: [
+          "Se resuelve cuando se resuelva la primera promesa.",
+          "Se resuelve cuando se resuelvan todas; si una falla, se rechaza.",
+          "Solo sirve para ejecutar promesas en serie."
+        ],
+        correct: 1,
+        exp: "all espera a todas. Si una rechaza, el conjunto rechaza."
+      },
+      {
+        texto: "19) Promise.race([...])...",
+        opciones: [
+          "Devuelve la que termine primero (resuelta o rechazada).",
+          "Es igual que Promise.all.",
+          "Es para ejecutar promesas una detrás de otra."
+        ],
+        correct: 0,
+        exp: "race termina con el primer resultado/errores que llegue."
+      },
+      {
+        texto: "20) ¿Cuál es la forma recomendada de gestionar errores con promesas?",
+        opciones: [
+          "Usar await.catch().",
+          "Usar catch() en la cadena de promesas.",
+          "Envolver fetch en try/catch fuera de una función async."
+        ],
+        correct: 1,
+        exp: "Con promesas: .then(...).catch(error => ...)."
+      },
+      {
+        texto: "21) ¿Qué ocurre si lanzas un error dentro de un then()?",
+        opciones: [
+          "No pasa nada; el error se ignora.",
+          "La promesa se rechaza y el error puede capturarse en catch().",
+          "Se captura automáticamente por un try/catch externo al then()."
+        ],
+        correct: 1,
+        exp: "Un throw dentro de then provoca rechazo y va al catch."
+      },
+      {
+        texto: "22) ¿Por qué un try...catch NO captura un error lanzado dentro de setTimeout?",
+        opciones: [
+          "Porque setTimeout no acepta callbacks.",
+          "Porque cuando se ejecuta el callback, el bloque try...catch ya terminó.",
+          "Porque try...catch solo funciona con promesas."
+        ],
+        correct: 1,
+        exp: "El callback ocurre después; el try/catch ya no está en ejecución."
+      },
+      {
+        texto: "23) En fetch(), ¿qué significa response.ok?",
+        opciones: [
+          "Que el JSON es válido.",
+          "Que el status HTTP está entre 200 y 299.",
+          "Que la red es siempre rápida."
+        ],
+        correct: 1,
+        exp: "ok es true si status está en rango de éxito HTTP (200–299)."
+      },
+      {
+        texto: "24) response.json()...",
+        opciones: [
+          "Devuelve directamente un objeto JavaScript.",
+          "Devuelve una promesa que se resuelve con los datos parseados.",
+          "Solo se puede usar con POST."
+        ],
+        correct: 1,
+        exp: "json() es asíncrono: devuelve una Promise."
+      },
+      {
+        texto: "25) En fetch con method GET, respecto a body...",
+        opciones: [
+          "Se puede enviar body sin problema.",
+          "No es posible enviar datos en body con GET o HEAD.",
+          "body es obligatorio."
+        ],
+        correct: 1,
+        exp: "GET/HEAD no llevan body en este enfoque (tal como se explica en la unidad)."
+      },
+      {
+        texto: "26) Para indicar JSON en una petición, normalmente se usa la cabecera...",
+        opciones: [
+          "Content-Type: application/json;charset=utf-8",
+          "Accept-Language: es-ES",
+          "X-Powered-By: JavaScript"
+        ],
+        correct: 0,
+        exp: "Content-Type informa al servidor del formato del cuerpo (JSON)."
+      },
+      {
+        texto: "27) Si se envía un objeto FormData como body en fetch...",
+        opciones: [
+          "Hay que poner obligatoriamente Content-Type a multipart/form-data manualmente.",
+          "No hace falta indicar Content-Type; el navegador lo gestiona.",
+          "FormData solo sirve para GET."
+        ],
+        correct: 1,
+        exp: "Con FormData el navegador establece correctamente el multipart/form-data con su boundary."
+      },
+      {
+        texto: "28) Para abortar una petición fetch se usa...",
+        opciones: [
+          "AbortController y su signal (AbortSignal).",
+          "clearTimeout().",
+          "Promise.cancel()."
+        ],
+        correct: 0,
+        exp: "AbortController permite cancelar; fetch rechaza con AbortError."
+      },
+      {
+        texto: "29) Si una petición fetch se aborta, normalmente el error tiene name...",
+        opciones: [
+          "AbortError",
+          "TimeoutError",
+          "NetworkOK"
+        ],
+        correct: 0,
+        exp: "Al abortar, se rechaza y suele identificarse como AbortError."
+      },
+      {
+        texto: "30) Si una web intenta hacer fetch a otro dominio y falla por seguridad, la solución suele ser...",
+        opciones: [
+          "Activar CORS en el servidor para permitir el origen.",
+          "Usar map() antes del fetch.",
+          "Cambiar JSON por XML."
+        ],
+        correct: 0,
+        exp: "Same-origin policy bloquea; CORS permite accesos cross-origin si el servidor lo configura."
+      }
+    ];
+
+    const form = document.getElementById("quiz");
+    const resultado = document.getElementById("resultado");
+    const btnCorregir = document.getElementById("btnCorregir");
+    const btnReiniciar = document.getElementById("btnReiniciar");
+
+    function renderQuiz() {
+      form.innerHTML = "";
+      preguntas.forEach((p, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.index = idx;
+
+        const title = document.createElement("div");
+        title.className = "q-title";
+        title.textContent = p.texto;
+
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = "UF4";
+        title.appendChild(pill);
+
+        card.appendChild(title);
+
+        p.opciones.forEach((opt, j) => {
+          const id = `q${idx}_opt${j}`;
+
+          const label = document.createElement("label");
+          label.htmlFor = id;
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `q${idx}`;
+          input.id = id;
+          input.value = j;
+
+          label.appendChild(input);
+          label.append(" " + opt);
+
+          card.appendChild(label);
+        });
+
+        const feedback = document.createElement("div");
+        feedback.className = "small muted";
+        feedback.style.marginTop = "10px";
+        feedback.id = `fb${idx}`;
+        feedback.textContent = "Sin corregir.";
+        card.appendChild(feedback);
+
+        form.appendChild(card);
+      });
+    }
+
+    function corregir() {
+      let aciertos = 0;
+      let contestadas = 0;
+
+      preguntas.forEach((p, idx) => {
+        const seleccion = form.querySelector(`input[name="q${idx}"]:checked`);
+        const fb = document.getElementById(`fb${idx}`);
+
+        fb.classList.remove("ok", "ko");
+        fb.classList.add("small");
+
+        if (!seleccion) {
+          fb.textContent = "❗ No contestada.";
+          fb.classList.add("ko");
+          return;
+        }
+
+        contestadas++;
+        const val = Number(seleccion.value);
+
+        if (val === p.correct) {
+          aciertos++;
+          fb.textContent = `✅ Correcta. ${p.exp}`;
+          fb.classList.add("ok");
+        } else {
+          const correctaTxt = p.opciones[p.correct];
+          fb.textContent = `❌ Incorrecta. Correcta: "${correctaTxt}". ${p.exp}`;
+          fb.classList.add("ko");
+        }
+      });
+
+      const total = preguntas.length;
+      const nota = Math.round((aciertos / total) * 10 * 100) / 100;
+
+      resultado.innerHTML = `
+        <b>Resultado:</b> ${aciertos}/${total} aciertos · <b>Nota:</b> ${nota}/10
+        <div class="muted">Contestadas: ${contestadas}/${total}</div>
+      `;
+    }
+
+    function reiniciar() {
+      renderQuiz();
+      resultado.innerHTML = `<b>Resultado:</b> <span class="muted">aún sin corregir</span>`;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    btnCorregir.addEventListener("click", corregir);
+    btnReiniciar.addEventListener("click", reiniciar);
+
+    renderQuiz();
+  </script>
+</body>
+</html>
