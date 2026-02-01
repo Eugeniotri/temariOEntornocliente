@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UF5 Frameworks JavaScript — Resumen + Quiz (corrección inmediata)</title>
+  <style>
+    :root{color-scheme:light}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;line-height:1.5;background:#f6f7fb;color:#111827}
+    header{background:#0b5aa6;color:#fff;padding:22px 16px}
+    header h1{margin:0 0 6px;font-size:1.25rem}
+    header p{margin:0;opacity:.92}
+    main{max-width:980px;margin:0 auto;padding:18px 16px 44px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin:12px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    h2{margin:0 0 10px;font-size:1.1rem}
+    h3{margin:14px 0 8px;font-size:1rem}
+    code, pre{background:#0b1220;color:#e5e7eb;border-radius:10px}
+    pre{padding:12px;overflow:auto}
+    .pill{display:inline-block;font-size:.85rem;background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a;padding:4px 8px;border-radius:999px;margin-right:6px}
+    ul{margin:8px 0 0 18px}
+    .note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:12px}
+    .ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:10px 12px;border-radius:12px}
+    .bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px}
+    .muted{color:#6b7280}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button{
+      appearance:none;border:0;border-radius:12px;padding:10px 12px;font-weight:700;
+      background:#0b5aa6;color:#fff;cursor:pointer
+    }
+    button.secondary{background:#111827}
+    button.ghost{background:#fff;color:#0b5aa6;border:1px solid #cbd5e1}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .qhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .qtitle{margin:0;font-size:1.02rem}
+    .counter{font-size:.9rem;color:#6b7280}
+    .answers{margin-top:10px;display:grid;gap:8px}
+    .opt{
+      display:flex;gap:10px;align-items:flex-start;
+      border:1px solid #e5e7eb;border-radius:12px;padding:10px;background:#fff;
+      cursor:pointer
+    }
+    .opt input{margin-top:3px}
+    .opt:hover{border-color:#93c5fd}
+    .opt.correct{border-color:#34d399;background:#ecfdf5}
+    .opt.wrong{border-color:#fca5a5;background:#fef2f2}
+    .explain{margin-top:10px}
+    .progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+    .bar{height:100%;background:#0b5aa6;width:0%}
+    .small{font-size:.95rem}
+    footer{max-width:980px;margin:0 auto;padding:0 16px 26px;color:#6b7280;font-size:.95rem}
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>UF5 — Frameworks JavaScript</h1>
+  <p>Resumen + esquemas clave + quiz con corrección inmediata (tipo examen)</p>
+</header>
+
+<main>
+
+  <!-- RESUMEN / ESQUEMA -->
+  <section class="card">
+    <div class="toolbar">
+      <span class="pill">UF5</span>
+      <span class="pill">Webpack</span>
+      <span class="pill">Angular</span>
+      <span class="pill">React</span>
+    </div>
+    <h2>Esquema desarrollado (lo que más cae en examen)</h2>
+    <p class="muted small">
+      Idea central: en proyectos “serios” no trabajas a base de &lt;script&gt; sueltos, sino con herramientas
+      (npm/npx + empaquetador como Webpack) y frameworks (Angular/React). :contentReference[oaicite:1]{index=1}
+    </p>
+
+    <div class="grid">
+
+      <article class="card">
+        <h3>1) Librerías externas y herramientas</h3>
+        <ul>
+          <li><b>Gestión de paquetes</b>: <b>npm</b> (NodeJS), <b>Yarn</b> (alternativa), <b>Bower</b> (en desuso). :contentReference[oaicite:2]{index=2}</li>
+          <li><b>npx</b>: ejecuta herramientas Node sin instalarlas globalmente (las busca en el proyecto o las descarga). :contentReference[oaicite:3]{index=3}</li>
+          <li><b>Automatización</b>: Grunt (config), Gulp (código). :contentReference[oaicite:4]{index=4}</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>2) Webpack tells you why “no funciona abriendo index.html”</h3>
+        <ul>
+          <li>Detecta dependencias (imports), <b>empaqueta</b> y genera salida para navegador: <b>HTML/CSS/JS compatibles</b>. :contentReference[oaicite:5]{index=5}</li>
+          <li>Salida típica: <code>dist/main.js</code>. Luego lo cargas en <code>index.html</code> con un único &lt;script&gt; al final del &lt;body&gt;. :contentReference[oaicite:6]{index=6}</li>
+          <li>Puede manejar TS, SASS/LESS, módulos CommonJS, etc. (según loaders/config). :contentReference[oaicite:7]{index=7}</li>
+        </ul>
+        <pre><code># build manual en un proyecto webpack
+npx webpack
+# y en index.html:
+&lt;script src="./dist/main.js"&gt;&lt;/script&gt;</code></pre>
+      </article>
+
+      <article class="card">
+        <h3>3) Angular (SPA “con todo incluido”)</h3>
+        <ul>
+          <li>Framework SPA mantenido por Google, usa <b>TypeScript</b>. :contentReference[oaicite:8]{index=8}</li>
+          <li><b>CLI</b>: <code>npm i -g @angular/cli</code> → comando <code>ng</code>. :contentReference[oaicite:9]{index=9}</li>
+          <li>Crear proyecto: <code>ng new</code> (puede añadir routing, elige estilos, crea git, esqueleto). :contentReference[oaicite:10]{index=10}</li>
+          <li>Dev server: <code>ng serve --open</code> (hot reload). Build: <code>ng build</code> → <b>dist/</b>. :contentReference[oaicite:11]{index=11}</li>
+          <li><b>Componente</b> = clase TS + template HTML + selector + (opcional) CSS. :contentReference[oaicite:12]{index=12}</li>
+          <li><b>Plantillas</b>: NO metes &lt;html&gt; ni &lt;body&gt; en app.html. Directivas típicas:
+            <code>{{ }}</code>, <code>*ngFor</code>, <code>*ngIf</code>, <code>[attr]</code>, <code>(event)</code>. :contentReference[oaicite:13]{index=13}</li>
+          <li><b>Comunicación</b>: Padre→Hijo con <code>@Input()</code>, Hijo→Padre con <code>@Output()</code> + eventos. :contentReference[oaicite:14]{index=14}</li>
+          <li><b>Data binding</b>: unidireccional y doble con <code>[(ngModel)]</code> (requiere <code>FormsModule</code>). :contentReference[oaicite:15]{index=15}</li>
+          <li><b>Routing + HTTP</b>: Angular trae servicios/módulos para rutas y peticiones (HttpClient). :contentReference[oaicite:16]{index=16}</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>4) React (UI “más minimalista”)</h3>
+        <ul>
+          <li>Framework/librería para <b>interfaces</b>, mantenido por Meta. :contentReference[oaicite:17]{index=17}</li>
+          <li>Proyecto con <code>npx create-react-app</code>. Comandos:
+            <code>npm start</code> (dev), <code>npm run build</code> (build → <b>build/</b>), <code>npm test</code>. :contentReference[oaicite:18]{index=18}</li>
+          <li><b>JSX</b>: HTML dentro de JS. Variables en <code>{ }</code>; atributos con variables: <code>href={url}</code>.
+            Etiquetas sin cierre: <code/>&nbsp; y un único padre. :contentReference[oaicite:19]{index=19}</li>
+          <li><b>Props</b>: datos que recibe el componente (solo lectura). Acceso: <code>this.props.algo</code>. :contentReference[oaicite:20]{index=20}</li>
+          <li><b>State</b>: si cambia, re-render. Se cambia con <code>this.setState(...)</code>. :contentReference[oaicite:21]{index=21}</li>
+          <li><b>Eventos</b>: camelCase (<code>onClick</code>), y se pasa función con llaves:
+            <code>onClick={miFuncion}</code> (o flecha para mantener this). :contentReference[oaicite:22]{index=22}</li>
+          <li><b>Formularios</b>: “componentes controlados” (value ligado a state + onChange actualiza state). :contentReference[oaicite:23]{index=23}</li>
+          <li>Routing/HTTP: suele usar librerías externas (React Router, fetch/axios). :contentReference[oaicite:24]{index=24}</li>
+        </ul>
+      </article>
+
+    </div>
+
+    <div class="note" style="margin-top:12px">
+      <b>Truco de examen:</b> Angular trae mucho “de serie” (routing, http, etc.). React suele apoyarse en librerías externas
+      para routing/HTTP, y su núcleo está muy enfocado a UI + componentes. :contentReference[oaicite:25]{index=25}
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="card">
+    <div class="qhead">
+      <div>
+        <h2 style="margin:0 0 6px">Quiz UF5 (corrección inmediata)</h2>
+        <p class="muted" style="margin:0">
+          Responde y al instante te digo si está bien (y por qué). Puedes repetir las veces que quieras.
+        </p>
+      </div>
+      <div class="counter" id="counter">—</div>
+    </div>
+
+    <div class="progress" aria-label="Progreso del cuestionario"><div class="bar" id="bar"></div></div>
+
+    <div id="quizArea" style="margin-top:12px"></div>
+
+    <div class="toolbar" style="margin-top:12px">
+      <button class="ghost" id="btnRestart" type="button">Reiniciar</button>
+      <button class="secondary" id="btnPrev" type="button">Anterior</button>
+      <button id="btnNext" type="button">Siguiente</button>
+    </div>
+
+    <div id="scoreBox" class="card" style="display:none; margin-top:12px"></div>
+  </section>
+
+</main>
+
+<footer>
+  Consejo: súbelo a tu repo y en GitHub Pages asegúrate de que el archivo se llame <b>index.html</b> o enlázalo desde tu index.
+</footer>
+
+<script>
+  // === BANCO DE PREGUNTAS ===
+  // Incluye las tuyas (P2..P13 + P11 del pantallazo) + 10 nuevas.
+  // correct: índice 0..3 (a=0, b=1, c=2, d=3)
+  const QUESTIONS = [
+    // --- Tus preguntas ---
+    {
+      id: "P2",
+      text: "El proceso de compilación o empaquetado en el desarrollo en entorno cliente consiste en…",
+      options: [
+        "Crear código binario a partir del código fuente JavaScript.",
+        "Generar archivos HTML, JavaScript y CSS compatibles con los navegadores.",
+        "Eliminar espacios en blanco de JS y CSS para que ocupen menos y se descarguen más rápido.",
+        "Descargar e instalar las librerías de las que dependa la aplicación."
+      ],
+      correct: 1,
+      why: "El empaquetado/compilación genera salida estándar (HTML/CSS/JS) compatible con el navegador. La minificación puede ser parte del proceso, pero no lo define por sí sola."
+    },
+    {
+      id: "P3",
+      text: "¿Cuáles de las siguientes funciones puede realizar Webpack?",
+      options: [
+        "Compilar código TypeScript.",
+        "Generar código de backend.",
+        "Ofrecer soporte para múltiples frameworks.",
+        "Empaquetado de la aplicación."
+      ],
+      correct: 3,
+      why: "Webpack es un empaquetador/bundler: resuelve dependencias y genera bundles para navegador. Puede integrarse con TypeScript vía loaders, pero su función principal que suele caer es el empaquetado."
+    },
+    {
+      id: "P4",
+      text: "Un archivo con código JavaScript puede guardarse con extensión .ts y ejecutarse como código TypeScript sin necesidad de realizar ninguna tarea adicional.",
+      options: ["Falso.", "Depende de la versión de TypeScript.", "Depende del navegador.", "Verdadero."],
+      correct: 0,
+      why: "TypeScript es superset de JS (el JS es TS válido), pero para ejecutarlo en navegador necesitas compilar/transpilar a JS."
+    },
+    {
+      id: "P5",
+      text: "En Angular, la comunicación entre componentes padre y componentes hijo se realiza…",
+      options: [
+        "A través de propiedades sencillas.",
+        "De padre a hijo con @Input(); de hijo a padre con @Output() emitiendo eventos.",
+        "A través de propiedades decoradas con @Input().",
+        "No existe comunicación directa; solo a través de servicios."
+      ],
+      correct: 1,
+      why: "El patrón típico en Angular es Input para datos hacia el hijo y Output+EventEmitter para comunicar del hijo al padre."
+    },
+    {
+      id: "P6",
+      text: "Las aplicaciones creadas con Angular…",
+      options: [
+        "Pueden cargarse en el navegador directamente a partir de su código fuente.",
+        "Pueden cargarse directamente si usan JavaScript y CSS en lugar de TypeScript y SASS.",
+        "Deben compilarse previamente para poder ser cargadas en el navegador.",
+        "Pueden cargarse directamente si usan JavaScript en lugar de TypeScript."
+      ],
+      correct: 2,
+      why: "Angular usa tecnologías y estructura que requieren build: se genera salida en dist/ lista para navegador."
+    },
+    {
+      id: "P7",
+      text: "Un componente de Angular está formado por…",
+      options: [
+        "Un archivo TypeScript con lógica (propiedades/métodos/ciclo de vida).",
+        "Un archivo de estilos (CSS/SCSS) con la apariencia.",
+        "Una plantilla HTML con la estructura.",
+        "No necesariamente un solo archivo: suele tener varios; plantilla + clase + selector (y estilos opcionales)."
+      ],
+      correct: 3,
+      why: "Un componente suele repartirse en varios archivos (TS + HTML + CSS), y el selector es lo que permite usarlo en plantillas."
+    },
+    {
+      id: "P8",
+      text: "¿Para qué se utiliza la directiva ngModel?",
+      options: [
+        "Enlace unidireccional entre propiedad y atributo de etiqueta.",
+        "Relacionar el componente con el nombre de la etiqueta del selector.",
+        "Enlace unidireccional entre propiedad y plantilla.",
+        "Enlazar una propiedad con un campo de formulario mediante double data binding."
+      ],
+      correct: 3,
+      why: "ngModel permite enlace bidireccional ([(ngModel)]) típico en formularios (requiere FormsModule)."
+    },
+    {
+      id: "P9",
+      text: "¿En qué consiste la característica de data binding o enlace de datos?",
+      options: [
+        "Cargar una vista según la URL.",
+        "Actualizar la interfaz cuando cambian los datos de los que depende.",
+        "Cargar datos desde los archivos del componente.",
+        "Obtener datos de una API de servidor."
+      ],
+      correct: 1,
+      why: "Data binding = la vista reacciona automáticamente a cambios en los datos (modelo/estado)."
+    },
+    {
+      id: "P10",
+      text: "¿Cómo se debe modificar una variable de estado en un componente React (clases)?",
+      options: [
+        "Asignando un nuevo valor a this.props.nombre_variable.",
+        "Asignando un nuevo valor a this.state.nombre_variable.",
+        "Ejecutando this.setState() y pasando un objeto con el nuevo valor.",
+        "Asignando un nuevo valor directamente al nombre de variable."
+      ],
+      correct: 2,
+      why: "En componentes de clase, el cambio que debe provocar re-render se hace con setState()."
+    },
+    {
+      id: "P11",
+      text: "La ejecución del código this.state = {var1: 'valor1'}; fuera del constructor, ¿qué efectos provoca en el componente?",
+      options: [
+        "Se actualiza el estado y se actualiza la vista.",
+        "Se actualiza el estado, pero NO se produce una actualización de la vista.",
+        "No se produce ningún efecto ni en el estado ni en la vista.",
+        "Se genera un error en tiempo de ejecución."
+      ],
+      correct: 1,
+      why: "Asignar this.state directamente fuera del constructor evita el mecanismo de React: no dispara re-render. Para eso se usa setState()."
+    },
+    {
+      id: "P12",
+      text: "Si se utiliza un componente mediante const elemento = <Componente1 dato1='x' />;, ¿cómo se puede hacer referencia a dato1 dentro de la lógica del componente?",
+      options: [
+        "Mediante this.state.param1.",
+        "Mediante this.param1.",
+        "Mediante param1.",
+        "Mediante this.props.param1."
+      ],
+      correct: 3,
+      why: "Los atributos pasan como props: se accede con this.props.<nombre>."
+    },
+    {
+      id: "P13",
+      text: "¿Qué funcionalidades ofrecen los frameworks JavaScript?",
+      options: [
+        "Permitir desarrollar apps web sin saber JavaScript.",
+        "Soporte para múltiples lenguajes de programación.",
+        "Garantizar la seguridad de las apps web.",
+        "Herramientas para la creación y compilación/empaquetado de proyectos."
+      ],
+      correct: 3,
+      why: "Entre sus características: tooling, compilación/empaquetado, servidor dev, routing, data binding, etc."
+    },
+
+    // --- 10 nuevas (UF5) ---
+    {
+      id: "N1",
+      text: "¿Qué comando se usa para crear un proyecto nuevo en Angular según la unidad?",
+      options: [
+        "npm create angular proyecto",
+        "ng new proyecto-angular",
+        "npx create-angular-app proyecto-angular",
+        "angular new proyecto-angular"
+      ],
+      correct: 1,
+      why: "Angular CLI crea el esqueleto con ng new (y puede preguntarte por routing y estilos)."
+    },
+    {
+      id: "N2",
+      text: "¿Qué comando arranca el servidor de desarrollo de Angular y abre el navegador?",
+      options: [
+        "ng build --open",
+        "ng serve --open",
+        "npm run dev --open",
+        "npx webpack --open"
+      ],
+      correct: 1,
+      why: "ng serve levanta el servidor de dev (localhost:4200) y con --open abre el navegador."
+    },
+    {
+      id: "N3",
+      text: "En Angular, ¿dónde se define el nombre de la etiqueta que usarás en HTML (por ejemplo, <app-saludo>)?",
+      options: [
+        "En index.html dentro de <head>.",
+        "En el decorador @Component, propiedad selector.",
+        "En styles.css con una clase CSS.",
+        "En package.json."
+      ],
+      correct: 1,
+      why: "El selector del @Component define el tag (app-root, app-saludo, etc.)."
+    },
+    {
+      id: "N4",
+      text: "¿Cuál de estas formas corresponde al enlace de atributo en Angular (property binding)?",
+      options: [
+        "(src)=\"imagen\"",
+        "[src]=\"imagen\"",
+        "{{src}}=\"imagen\"",
+        "src={{imagen}}"
+      ],
+      correct: 1,
+      why: "Los corchetes [ ] enlazan una propiedad/atributo del DOM al valor de una propiedad del componente."
+    },
+    {
+      id: "N5",
+      text: "¿Qué directiva de Angular se usa para iterar un array y repetir elementos?",
+      options: ["*ngIf", "*ngFor", "ngLoop", "ngEach"],
+      correct: 1,
+      why: "*ngFor recorre listas (por ejemplo: *ngFor=\"let color of colores\")."
+    },
+    {
+      id: "N6",
+      text: "Para usar [(ngModel)] en Angular, antes debes…",
+      options: [
+        "Instalar axios",
+        "Importar FormsModule en el módulo correspondiente",
+        "Activar React Router",
+        "Añadir <script> de Angular en index.html"
+      ],
+      correct: 1,
+      why: "ngModel pertenece al módulo de formularios: FormsModule."
+    },
+    {
+      id: "N7",
+      text: "En React (JSX), si quieres usar una variable en un atributo (por ejemplo href), lo correcto es…",
+      options: [
+        "<a href=\"{url}\">Enlace</a>",
+        "<a href={url}>Enlace</a>",
+        "<a href={{url}}>Enlace</a>",
+        "<a href=(url)>Enlace</a>"
+      ],
+      correct: 1,
+      why: "En JSX se usan llaves sin comillas para insertar expresiones JS en atributos."
+    },
+    {
+      id: "N8",
+      text: "En JSX, una etiqueta sin cierre (como img) debe escribirse…",
+      options: [
+        "<img src=\"x\">",
+        "<img src=\"x\"></img>",
+        "<img src=\"x\" />",
+        "<img>src=\"x\"</img>"
+      ],
+      correct: 2,
+      why: "En JSX los elementos sin cierre deben terminar en />."
+    },
+    {
+      id: "N9",
+      text: "¿Cuál es la idea clave de un “componente controlado” en React para formularios?",
+      options: [
+        "Usar ngModel para doble enlace.",
+        "El value del input va a una variable normal y ya.",
+        "value del input se liga al state y onChange actualiza el state.",
+        "Se envía el formulario sin preventDefault siempre."
+      ],
+      correct: 2,
+      why: "React no tiene ngModel: se controla el input con estado (value + onChange)."
+    },
+    {
+      id: "N10",
+      text: "En React, para eventos en JSX, lo correcto suele ser…",
+      options: [
+        "onclick=\"miFuncion()\"",
+        "onClick={miFuncion()}",
+        "onClick={miFuncion}",
+        "onClick=\"{miFuncion}\""
+      ],
+      correct: 2,
+      why: "Se pasa la referencia a la función (sin paréntesis) y con camelCase: onClick={miFuncion}."
+    }
+  ];
+
+  // === ESTADO DEL QUIZ ===
+  let idx = 0;
+  const state = {
+    answers: Array(QUESTIONS.length).fill(null),
+    correctCount: 0
+  };
+
+  const elQuiz = document.getElementById("quizArea");
+  const elCounter = document.getElementById("counter");
+  const elBar = document.getElementById("bar");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+  const btnRestart = document.getElementById("btnRestart");
+  const scoreBox = document.getElementById("scoreBox");
+
+  function pct() {
+    const done = state.answers.filter(a => a !== null).length;
+    return Math.round((done / QUESTIONS.length) * 100);
+  }
+
+  function updateTop() {
+    elCounter.textContent = `Pregunta ${idx + 1} / ${QUESTIONS.length} · Progreso ${pct()}%`;
+    elBar.style.width = pct() + "%";
+    btnPrev.disabled = idx === 0;
+    btnNext.textContent = (idx === QUESTIONS.length - 1) ? "Finalizar" : "Siguiente";
+  }
+
+  function render() {
+    scoreBox.style.display = "none";
+    const q = QUESTIONS[idx];
+    updateTop();
+
+    const chosen = state.answers[idx]; // null o 0..3
+    const isAnswered = chosen !== null;
+    const isCorrect = isAnswered ? (chosen === q.correct) : false;
+
+    elQuiz.innerHTML = `
+      <div class="card">
+        <div class="qhead">
+          <p class="qtitle"><b>${q.id}</b> · ${q.text}</p>
+          <span class="muted">Selecciona una opción</span>
+        </div>
+
+        <div class="answers" role="radiogroup" aria-label="Opciones de respuesta">
+          ${q.options.map((opt, i) => {
+            const cls =
+              !isAnswered ? "" :
+              (i === q.correct ? "correct" : (i === chosen ? "wrong" : ""));
+            const checked = (chosen === i) ? "checked" : "";
+            return `
+              <label class="opt ${cls}">
+                <input type="radio" name="q" value="${i}" ${checked} ${isAnswered ? "disabled" : ""} />
+                <span><b>${String.fromCharCode(97 + i)})</b> ${opt}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="explain" id="feedback"></div>
+      </div>
+    `;
+
+    // listeners
+    const radios = elQuiz.querySelectorAll('input[type="radio"][name="q"]');
+    radios.forEach(r => {
+      r.addEventListener("change", (e) => {
+        const val = Number(e.target.value);
+        answer(val);
+      });
+    });
+
+    // si ya respondida, muestra feedback
+    if (isAnswered) showFeedback(isCorrect, q.why, q.correct, chosen);
+  }
+
+  function showFeedback(ok, why, correctIdx, chosenIdx) {
+    const fb = document.getElementById("feedback");
+    const correctLetter = String.fromCharCode(97 + correctIdx);
+    const chosenLetter = String.fromCharCode(97 + chosenIdx);
+
+    fb.innerHTML = ok
+      ? `<div class="ok"><b>✅ Correcto.</b> (${chosenLetter})<br><span class="small">${why}</span></div>`
+      : `<div class="bad"><b>❌ Incorrecto.</b> Tú marcaste (${chosenLetter}) y la correcta es (${correctLetter}).<br><span class="small">${why}</span></div>`;
+  }
+
+  function recomputeScore() {
+    let c = 0;
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      if (state.answers[i] !== null && state.answers[i] === QUESTIONS[i].correct) c++;
+    }
+    state.correctCount = c;
+  }
+
+  function answer(val) {
+    // si ya contestada, no cambiar
+    if (state.answers[idx] !== null) return;
+
+    state.answers[idx] = val;
+    recomputeScore();
+
+    const q = QUESTIONS[idx];
+    const ok = val === q.correct;
+    render(); // re-render para pintar colores y bloquear
+    showFeedback(ok, q.why, q.correct, val);
+    updateTop();
+  }
+
+  function finish() {
+    recomputeScore();
+    const answered = state.answers.filter(a => a !== null).length;
+    scoreBox.style.display = "block";
+    scoreBox.innerHTML = `
+      <h3 style="margin:0 0 6px">Resultado</h3>
+      <p style="margin:0 0 8px">
+        Has respondido <b>${answered}/${QUESTIONS.length}</b> preguntas.<br>
+        Aciertos: <b>${state.correctCount}</b> · Fallos: <b>${answered - state.correctCount}</b>
+      </p>
+      <div class="note">
+        Si quieres, reinicia y hazlo otra vez intentando mejorar el %.
+      </div>
+    `;
+  }
+
+  btnPrev.addEventListener("click", () => {
+    if (idx > 0) idx--;
+    render();
+  });
+
+  btnNext.addEventListener("click", () => {
+    if (idx === QUESTIONS.length - 1) {
+      finish();
+    } else {
+      idx++;
+      render();
+    }
+  });
+
+  btnRestart.addEventListener("click", () => {
+    idx = 0;
+    state.answers = Array(QUESTIONS.length).fill(null);
+    state.correctCount = 0;
+    render();
+  });
+
+  // init
+  render();
+</script>
+
+</body>
+</html>
