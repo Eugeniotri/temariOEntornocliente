@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>React (UF5) · Esquema + Quiz con corrección inmediata</title>
+  <style>
+    :root{
+      --border:#e6e6e6;
+      --muted:#444;
+      --soft:#fafafa;
+      --ok:#0a7a0a;
+      --bad:#b00020;
+      --ink:#111;
+    }
+    body{ font-family: Arial, sans-serif; margin: 18px; line-height: 1.45; color: var(--ink); }
+    .wrap{ max-width: 980px; margin: 0 auto; }
+    h1{ margin: 0 0 6px; }
+    h2{ margin-top: 22px; }
+    .sub{ color: var(--muted); margin-top: 0; }
+
+    .panel{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--soft);
+    }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    ul{ margin: 8px 0 0 18px; }
+
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin: 12px 0 8px;
+    }
+    button{
+      padding: 10px 14px; border: 1px solid #333; border-radius: 10px;
+      background: #fff; cursor: pointer;
+    }
+    button:hover{ background:#f3f3f3; }
+
+    .scoreBox{
+      display:inline-block; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: #fff;
+    }
+    .hr{ height:1px; background: var(--border); margin: 18px 0; }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 14px 0;
+      background: #fff;
+    }
+    .q-title{ font-weight: 700; margin-bottom: 8px; }
+    .opt{ display:block; margin: 6px 0; }
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      display:none;
+    }
+    .feedback.show{ display:block; }
+    .ok{ color: var(--ok); font-weight: 700; }
+    .bad{ color: var(--bad); font-weight: 700; }
+    .small{ font-size: .95em; color: var(--muted); margin-top: 8px; }
+    .locked{
+      opacity: 0.92;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>React · Esquema + Quiz (corrección inmediata)</h1>
+  <p class="sub">Elige una opción por pregunta: al responder, te dice al momento si has acertado.</p>
+
+  <!-- =======================
+       ESQUEMA ULTRA-RÁPIDO
+  ======================== -->
+  <section class="panel">
+    <h2>Esquema ultra-rápido React (para memorizar)</h2>
+    <ul>
+      <li><strong>React</strong> = librería de UI por componentes (Meta)</li>
+      <li><strong>Proyecto</strong>:
+        <ul>
+          <li><span class="mono">npx create-react-app</span></li>
+          <li><span class="mono">npm start</span> (puerto 3000)</li>
+          <li><span class="mono">npm run build</span> (carpeta <span class="mono">build/</span>)</li>
+        </ul>
+      </li>
+      <li><strong>Estructura</strong>:
+        <ul>
+          <li><span class="mono">public/index.html</span> → <span class="mono">&lt;div id="root"&gt;</span></li>
+          <li><span class="mono">src/index.js</span> → render dentro de <span class="mono">root</span></li>
+          <li><span class="mono">src/</span> = código fuente</li>
+        </ul>
+      </li>
+      <li><strong>JSX</strong>:
+        <ul>
+          <li>HTML dentro de JS</li>
+          <li><span class="mono">{ }</span> para insertar JS</li>
+          <li>1 elemento padre envolviendo</li>
+          <li>etiquetas vacías: <span class="mono">&lt;img /&gt;</span></li>
+        </ul>
+      </li>
+      <li><strong>Componentes</strong>:
+        <ul>
+          <li><strong>props</strong> = datos del padre (solo lectura)</li>
+          <li><strong>state</strong> = datos internos (en clase: <span class="mono">setState()</span>)</li>
+        </ul>
+      </li>
+      <li><strong>Eventos</strong>: camelCase (<span class="mono">onClick</span>) y se pasa función con <span class="mono">{funcion}</span></li>
+      <li><strong>Listas/condiciones</strong>: JavaScript (<span class="mono">map()</span>, <span class="mono">if</span>, ternarios)</li>
+      <li><strong>Formularios</strong>: controlados (state + <span class="mono">onChange</span>)</li>
+      <li><strong>Routing/HTTP</strong> (externo):
+        <ul>
+          <li>Routing: React Router</li>
+          <li>HTTP: <span class="mono">fetch</span> o <span class="mono">axios</span></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <div class="hr"></div>
+
+  <!-- =======================
+            QUIZ
+  ======================== -->
+  <section>
+    <h2>Quiz React (17 preguntas)</h2>
+    <p class="sub">Cada pregunta se corrige al instante y se bloquea para que no cambies la respuesta.</p>
+
+    <div class="controls">
+      <button type="button" onclick="resetQuiz()">Reset</button>
+      <span class="scoreBox" id="scoreBox">Aciertos: 0 / 17</span>
+      <span class="scoreBox" id="progressBox">Respondidas: 0 / 17</span>
+    </div>
+
+    <form id="quiz"></form>
+  </section>
+
+</div>
+
+<script>
+  const questions = [
+    { id: 1, text: "¿Qué es React?",
+      options: { A:"Un framework completo que incluye routing y HTTP por defecto", B:"Una librería para crear interfaces de usuario basada en componentes", C:"Un lenguaje de programación", D:"Un gestor de bases de datos" },
+      answer:"B", explain:"React es una librería enfocada a la interfaz (UI). Routing/HTTP suelen ser externos."
+    },
+    { id: 2, text: "¿Qué empresa mantiene React?",
+      options: { A:"Google", B:"Microsoft", C:"Meta (Facebook)", D:"Amazon" },
+      answer:"C", explain:"React es mantenido por Meta (Facebook)."
+    },
+    { id: 3, text: "¿Qué comando se utiliza para crear un proyecto React según el temario?",
+      options: { A:"npm install react", B:"ng new react-app", C:"npx create-react-app nombre-app", D:"react new app" },
+      answer:"C", explain:"create-react-app crea toda la estructura del proyecto. npm install react solo instala la librería."
+    },
+    { id: 4, text: "¿En qué puerto se ejecuta por defecto una aplicación React con npm start?",
+      options: { A:"4200", B:"3000", C:"8080", D:"8000" },
+      answer:"B", explain:"Por defecto React arranca en http://localhost:3000."
+    },
+    { id: 5, text: "¿Qué es JSX?",
+      options: { A:"Un nuevo lenguaje de programación", B:"Una extensión de JavaScript que permite escribir HTML dentro de JS", C:"Un sustituto de CSS", D:"Un framework para React" },
+      answer:"B", explain:"JSX es una sintaxis tipo HTML dentro de JavaScript que luego se compila."
+    },
+    { id: 6, text: "¿Cuál es una regla correcta sobre JSX?",
+      options: { A:"Puede haber varios elementos raíz sin envolver", B:"Las etiquetas sin contenido no necesitan cerrarse", C:"Debe existir un único elemento padre", D:"JSX no puede contener JavaScript" },
+      answer:"C", explain:"En JSX debe haber un único elemento padre (contenedor). Las etiquetas vacías se cierran: <img />."
+    },
+    { id: 7, text: "¿Qué carpeta contiene el código fuente de una aplicación React?",
+      options: { A:"public/", B:"build/", C:"src/", D:"node_modules/" },
+      answer:"C", explain:"src/ contiene el código fuente. build/ es producción. public/ tiene el HTML base."
+    },
+    { id: 8, text: "¿Qué archivo “engancha” React al HTML para mostrar la aplicación?",
+      options: { A:"App.js", B:"index.js", C:"public/index.html", D:"package.json" },
+      answer:"B", explain:"src/index.js renderiza la app dentro del div root del public/index.html."
+    },
+    { id: 9, text: "¿Cómo se llama el mecanismo para pasar datos de un componente padre a uno hijo en React?",
+      options: { A:"State", B:"Events", C:"Props", D:"Services" },
+      answer:"C", explain:"Props pasa datos del padre al hijo (solo lectura)."
+    },
+    { id:10, text: "¿Qué afirmación sobre el estado (state) en React es correcta?",
+      options: { A:"El estado no puede cambiar nunca", B:"El estado solo se usa en componentes padre", C:"Cambiar el estado provoca que el componente se vuelva a renderizar", D:"El estado se modifica directamente con una asignación" },
+      answer:"C", explain:"Cuando cambia el state, React re-renderiza para reflejar el nuevo estado."
+    },
+    { id:11, text: "¿Cómo deben escribirse los eventos en React?",
+      options: { A:"En minúsculas (onclick)", B:"En camelCase (onClick)", C:"En mayúsculas (ONCLICK)", D:"Igual que en HTML estándar" },
+      answer:"B", explain:"React usa camelCase: onClick, onSubmit, onChange, etc."
+    },
+    { id:12, text: "¿Qué método se utiliza (en componentes de clase) para actualizar el estado correctamente?",
+      options: { A:"this.state = valor", B:"updateState()", C:"this.setState()", D:"setValue()" },
+      answer:"C", explain:"En componentes de clase se usa this.setState() para que React detecte el cambio."
+    },
+    { id:13, text: "¿Cómo se suelen generar listas de elementos en React?",
+      options: { A:"Mediante *ngFor", B:"Usando bucles for en el HTML", C:"Utilizando el método map() de JavaScript", D:"Con directivas propias de React" },
+      answer:"C", explain:"React usa JavaScript: array.map(...) para generar JSX."
+    },
+    { id:14, text: "¿Cómo se suelen hacer las condiciones en React?",
+      options: { A:"Usando *ngIf", B:"Con directivas propias de React", C:"Utilizando JavaScript (if, ternarios, etc.)", D:"No se pueden hacer condiciones en React" },
+      answer:"C", explain:"Se usan if, ternarios, &&, etc. (JavaScript normal)."
+    },
+    { id:15, text: "¿Cómo se gestionan normalmente los formularios en React?",
+      options: { A:"Con doble binding automático como [(ngModel)]", B:"Mediante componentes controlados (estado + eventos)", C:"Usando directivas propias de React", D:"React no permite formularios" },
+      answer:"B", explain:"En formularios controlados el value depende del estado y onChange actualiza el estado."
+    },
+    { id:16, text: "¿Qué afirmación sobre el routing en React es correcta?",
+      options: { A:"React incluye routing por defecto", B:"React utiliza @NgModule para el routing", C:"El routing se implementa mediante librerías externas como React Router", D:"React no permite cambiar de vista" },
+      answer:"C", explain:"React Router es la librería típica para routing."
+    },
+    { id:17, text: "¿Cómo se suelen realizar las peticiones HTTP en React?",
+      options: { A:"Con el servicio HttpClient", B:"Mediante @Output()", C:"Usando la API fetch o librerías como axios", D:"React no permite peticiones HTTP" },
+      answer:"C", explain:"React usa fetch (nativo) o axios (librería externa). Angular usa HttpClient."
+    }
+  ];
+
+  const quizEl = document.getElementById("quiz");
+  const scoreBox = document.getElementById("scoreBox");
+  const progressBox = document.getElementById("progressBox");
+
+  // Estado
+  const state = {
+    answered: new Set(), // ids respondidas
+    correct: 0
+  };
+
+  function escapeHtml(str){
+    return str
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function render(){
+    quizEl.innerHTML = "";
+    questions.forEach(q => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.id = "q" + q.id;
+
+      const title = document.createElement("div");
+      title.className = "q-title";
+      title.textContent = `${q.id}. ${q.text}`;
+      card.appendChild(title);
+
+      // opciones
+      Object.entries(q.options).forEach(([key, text]) => {
+        const label = document.createElement("label");
+        label.className = "opt";
+        label.innerHTML = `
+          <input type="radio" name="q${q.id}" value="${key}" />
+          <strong>${key}.</strong> ${escapeHtml(text)}
+        `;
+        // evento: corrección inmediata al cambiar
+        label.querySelector("input").addEventListener("change", (e) => handleAnswer(q.id, e.target.value));
+        card.appendChild(label);
+      });
+
+      // feedback
+      const fb = document.createElement("div");
+      fb.className = "feedback";
+      fb.id = `fb${q.id}`;
+      card.appendChild(fb);
+
+      quizEl.appendChild(card);
+    });
+
+    updateBoxes();
+  }
+
+  function handleAnswer(qid, selected){
+    // si ya está respondida, no hacemos nada
+    if(state.answered.has(qid)) return;
+
+    const q = questions.find(x => x.id === qid);
+    const card = document.getElementById("q" + qid);
+    const fb = document.getElementById("fb" + qid);
+
+    const isCorrect = selected === q.answer;
+    if(isCorrect) state.correct++;
+
+    state.answered.add(qid);
+
+    // feedback visible
+    fb.classList.add("show");
+    fb.innerHTML = `
+      <div class="${isCorrect ? "ok" : "bad"}">
+        ${isCorrect ? "Correcta ✅" : "Incorrecta ❌"}
+      </div>
+      <div class="small">
+        Tu respuesta: <strong>${selected}</strong> · Correcta: <strong>${q.answer}</strong>
+      </div>
+      <div class="small">${escapeHtml(q.explain)}</div>
+    `;
+
+    // bloquear inputs de esa pregunta
+    card.classList.add("locked");
+    card.querySelectorAll(`input[name="q${qid}"]`).forEach(inp => inp.disabled = true);
+
+    updateBoxes();
+  }
+
+  function updateBoxes(){
+    scoreBox.textContent = `Aciertos: ${state.correct} / ${questions.length}`;
+    progressBox.textContent = `Respondidas: ${state.answered.size} / ${questions.length}`;
+  }
+
+  function resetQuiz(){
+    state.answered.clear();
+    state.correct = 0;
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
