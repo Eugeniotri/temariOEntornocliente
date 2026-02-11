@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>QUIZ COMPLETO UF7 - 38 Preguntas</title>
+<style>
+body { font-family: Arial; max-width: 900px; margin: 40px auto; }
+h1 { font-size: 22px; }
+.question { font-weight: bold; margin-top: 20px; }
+label { display:block; margin:8px 0; }
+button { margin-top:15px; padding:8px 12px; }
+.correct { color: green; font-weight:bold; }
+.error { color: red; font-weight:bold; }
+.explain { margin-top:5px; }
+</style>
+</head>
+<body>
+
+<h1>Quiz Completo UF7 (38 preguntas)</h1>
+<p id="progress"></p>
+
+<div id="quiz"></div>
+
+<button onclick="checkAnswer()">Corregir</button>
+<button onclick="nextQuestion()">Siguiente</button>
+<button onclick="restartQuiz()">Reiniciar</button>
+
+<p id="feedback"></p>
+<p id="explanation" class="explain"></p>
+
+<script>
+
+const questions = [
+
+/* ---- AUTENTICACIÓN ---- */
+
+{
+q:"¿Cuál es la característica principal de la autenticación básica?",
+a:["Utiliza cookies de sesión",
+   "Envía usuario y contraseña en cada petición",
+   "Usa JWT",
+   "No necesita HTTPS"],
+correct:1,
+exp:"Basic envía usuario y contraseña en cada petición mediante Authorization: Basic."
+},
+
+{
+q:"En autenticación por sesiones, después del login se envía:",
+a:["Usuario y contraseña",
+   "JWT",
+   "Cookie con identificador de sesión",
+   "Archivo YAML"],
+correct:2,
+exp:"Se envía la cookie con el session_id automáticamente."
+},
+
+{
+q:"OpenID se utiliza para:",
+a:["Autorización",
+   "Autenticación",
+   "CDN",
+   "CI"],
+correct:1,
+exp:"OpenID es para autenticación (identidad)."
+},
+
+{
+q:"OAuth se utiliza principalmente para:",
+a:["Autenticación",
+   "Autorización",
+   "Despliegue",
+   "CDN"],
+correct:1,
+exp:"OAuth gestiona permisos (autorización)."
+},
+
+{
+q:"Ventaja principal de JWT:",
+a:["Cerrar sesión fácil",
+   "No usar HTTPS",
+   "No almacenar sesión en servidor",
+   "No incluir datos"],
+correct:2,
+exp:"JWT es stateless: no requiere almacenar sesiones."
+},
+
+{
+q:"Riesgo principal en autenticación por sesiones:",
+a:["XSS",
+   "CSRF",
+   "SQL Injection",
+   "DDoS"],
+correct:1,
+exp:"CSRF porque la cookie se envía automáticamente."
+},
+
+{
+q:"Cabecera correcta para enviar JWT:",
+a:["Authorization: Basic TOKEN",
+   "Authorization: Bearer TOKEN",
+   "Authorization: JWT TOKEN",
+   "Authorization: OpenId TOKEN"],
+correct:1,
+exp:"JWT se envía con Authorization: Bearer."
+},
+
+{
+q:"401 significa:",
+a:["No autenticado",
+   "Sin permisos",
+   "No existe",
+   "Error servidor"],
+correct:0,
+exp:"401 = no autenticado."
+},
+
+{
+q:"403 significa:",
+a:["No autenticado",
+   "Sin permisos",
+   "No existe",
+   "Error servidor"],
+correct:1,
+exp:"403 = autenticado pero sin permisos."
+},
+
+{
+q:"404 significa:",
+a:["No autenticado",
+   "Sin permisos",
+   "Recurso no encontrado",
+   "Error servidor"],
+correct:2,
+exp:"404 = recurso no encontrado."
+},
+
+{
+q:"500 significa:",
+a:["Error cliente",
+   "Error servidor",
+   "No existe",
+   "Sin permisos"],
+correct:1,
+exp:"500 = error interno del servidor."
+},
+
+{
+q:"200 significa:",
+a:["OK",
+   "Error servidor",
+   "No existe",
+   "No autenticado"],
+correct:0,
+exp:"200 OK = petición correcta."
+},
+
+{
+q:"¿Cuándo se envían credenciales en sesiones?",
+a:["En cada petición",
+   "Solo en login",
+   "Nunca",
+   "Solo en primera página protegida"],
+correct:1,
+exp:"Solo en login, luego se usa la cookie."
+},
+
+{
+q:"URL correcta autenticación básica:",
+a:["https://usuario:password@dominio.com",
+   "https://usuario@password:dominio.com",
+   "https://@usuario:password@dominio.com",
+   "https://usuario:password:dominio.com"],
+correct:0,
+exp:"Formato correcto: https://usuario:password@dominio"
+},
+
+/* ---- INTEGRACIÓN CONTINUA ---- */
+
+{
+q:"Objetivo principal de CI:",
+a:["Publicar siempre",
+   "Ejecutar tests automáticos",
+   "Eliminar Git",
+   "Evitar ramas"],
+correct:1,
+exp:"CI ejecuta tests automáticamente."
+},
+
+{
+q:"Después de crear VM en GitHub Actions:",
+a:["Instalar dependencias",
+   "Clonar repositorio",
+   "Ejecutar test",
+   "Desplegar"],
+correct:1,
+exp:"Primero clona el repositorio."
+},
+
+{
+q:"Carpeta workflows:",
+a:["/src",
+   ".github/workflows/",
+   "/config",
+   "/actions"],
+correct:1,
+exp:"Los YAML van en .github/workflows/"
+},
+
+{
+q:"Acceso a secreto:",
+a:["${{ secret.NAME }}",
+   "${{ secrets.NAME }}",
+   "$secret.NAME",
+   "{{ secrets.NAME }}"],
+correct:1,
+exp:"Se usa ${{ secrets.NOMBRE }}"
+},
+
+{
+q:"GitHub Actions se activa por:",
+a:["Commit local",
+   "Push o pull request según YAML",
+   "Abrir navegador",
+   "FTP"],
+correct:1,
+exp:"Se activa por eventos definidos en YAML."
+},
+
+{
+q:"Diferencia Delivery vs Deployment:",
+a:["Iguales",
+   "Delivery manual, Deployment automático",
+   "Delivery automático, Deployment manual",
+   "Solo tests"],
+correct:1,
+exp:"Delivery manual, Deployment automático."
+},
+
+{
+q:"Ventaja CI:",
+a:["Más lento",
+   "Detectar fallos pronto",
+   "No usa ramas",
+   "No usa tests"],
+correct:1,
+exp:"CI permite detectar errores antes."
+},
+
+/* ---- DESPLIEGUE ---- */
+
+{
+q:"SPA necesita:",
+a:["Servidor backend",
+   "Servidor estático",
+   "Base datos",
+   "FTP obligatorio"],
+correct:1,
+exp:"SPA solo necesita servidor web estático."
+},
+
+{
+q:"GitHub Pages es:",
+a:["CI",
+   "Hosting backend",
+   "Hosting estático",
+   "CDN"],
+correct:2,
+exp:"Es servicio de alojamiento estático."
+},
+
+{
+q:"Repo miusuario.github.io publica en:",
+a:["https://miusuario.github.io",
+   "https://github.io/miusuario",
+   "https://miusuario.io",
+   "https://miusuario.github.io/miusuario"],
+correct:0,
+exp:"Sitio principal usuario."
+},
+
+{
+q:"Repo proyecto1 publica en:",
+a:["https://miusuario.github.io",
+   "https://miusuario.github.io/proyecto1",
+   "https://proyecto1.github.io",
+   "https://github.io/proyecto1"],
+correct:1,
+exp:"Sitio de repositorio."
+},
+
+{
+q:"AWS S3 es:",
+a:["CDN",
+   "Almacenamiento masivo",
+   "CI",
+   "Backend"],
+correct:1,
+exp:"S3 es almacenamiento cloud."
+},
+
+{
+q:"CDN sirve para:",
+a:["Backend",
+   "Replicar archivos globalmente",
+   "Base datos",
+   "JWT"],
+correct:1,
+exp:"Replica archivos para mejorar velocidad."
+},
+
+{
+q:"Amplify permite:",
+a:["Eliminar Git",
+   "Automatizar build y despliegue",
+   "No usar credenciales",
+   "Solo backend"],
+correct:1,
+exp:"Amplify conecta repo y despliega automáticamente."
+}
+
+];
+
+let current = 0;
+let score = 0;
+
+function loadQuestion(){
+document.getElementById("progress").innerText =
+"Pregunta " + (current+1) + " de " + questions.length +
+" | Aciertos: " + score;
+
+let q = questions[current];
+let html = "<div class='question'>" + q.q + "</div>";
+
+q.a.forEach((opt,i)=>{
+html += "<label><input type='radio' name='option' value='"+i+"'> " + opt + "</label>";
+});
+
+document.getElementById("quiz").innerHTML = html;
+document.getElementById("feedback").innerHTML="";
+document.getElementById("explanation").innerHTML="";
+}
+
+function checkAnswer(){
+let selected = document.querySelector("input[name='option']:checked");
+if(!selected){ alert("Selecciona una opción"); return; }
+
+let answer = parseInt(selected.value);
+if(answer === questions[current].correct){
+score++;
+document.getElementById("feedback").innerHTML =
+"<span class='correct'>Correcto</span>";
+} else {
+document.getElementById("feedback").innerHTML =
+"<span class='error'>Incorrecto. Respuesta correcta: "
++ questions[current].a[questions[current].correct] + "</span>";
+}
+document.getElementById("explanation").innerHTML = questions[current].exp;
+}
+
+function nextQuestion(){
+if(current < questions.length-1){
+current++;
+loadQuestion();
+} else {
+alert("Fin del test. Resultado: " + score + "/" + questions.length);
+}
+}
+
+function restartQuiz(){
+current = 0;
+score = 0;
+loadQuestion();
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
